@@ -1,0 +1,16 @@
+#!/bin/sh
+
+staged_src=$(git diff --cached --name-only | grep -E '^packages/[^/]+/src/' || true)
+staged_changeset=$(git diff --cached --name-only | grep -E '^\.changeset/.+\.md$' || true)
+
+if [ -n "$staged_src" ] && [ -z "$staged_changeset" ]; then
+  echo ""
+  echo "⚠️  You have staged changes in packages/*/src but no changeset."
+  echo ""
+  echo "   Run: pnpm changeset"
+  echo "   Then stage the generated .changeset/*.md file."
+  echo ""
+  echo "   To skip this check: git commit --no-verify"
+  echo ""
+  exit 1
+fi
