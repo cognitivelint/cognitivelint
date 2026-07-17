@@ -1,4 +1,4 @@
-import type { SourceLocation } from '@dkoul/cognitivelint-core';
+import type { SourceLocation } from '@cognitivelint/cognitivelint-core';
 
 export interface ReactComponent {
   name: string;

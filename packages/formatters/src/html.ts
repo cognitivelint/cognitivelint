@@ -1,4 +1,4 @@
-import type { Report, Finding, CognitiveScore, Severity } from '@dkoul/cognitivelint-core';
+import type { Report, Finding, CognitiveScore, Severity } from '@cognitivelint/cognitivelint-core';
 import type { Formatter, FormatterOptions } from './types.js';
 
 function escapeHtml(text: string): string {

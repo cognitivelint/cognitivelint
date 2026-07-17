@@ -1,5 +1,5 @@
-import { createRule } from '@dkoul/cognitivelint-rule-engine';
-import type { ReactComponent, JSXElementInfo } from '@dkoul/cognitivelint-parser-react';
+import { createRule } from '@cognitivelint/cognitivelint-rule-engine';
+import type { ReactComponent, JSXElementInfo } from '@cognitivelint/cognitivelint-parser-react';
 
 interface Options {
   maxPrimaryActions: number;

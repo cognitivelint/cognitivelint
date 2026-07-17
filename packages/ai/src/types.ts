@@ -1,4 +1,4 @@
-import type { Finding, Rule } from '@dkoul/cognitivelint-core';
+import type { Finding, Rule } from '@cognitivelint/cognitivelint-core';
 
 export interface Explanation {
   whyItMatters: string;

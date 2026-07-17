@@ -1,4 +1,4 @@
-import type { Report } from '@dkoul/cognitivelint-core';
+import type { Report } from '@cognitivelint/cognitivelint-core';
 
 export interface FormatterOptions {
   colors?: boolean;

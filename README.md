@@ -1,6 +1,6 @@
 # CognitiveLint
 
-[![npm version](https://img.shields.io/npm/v/@dkoul/cognitivelint-cli.svg)](https://www.npmjs.com/package/@dkoul/cognitivelint-cli)
+[![npm version](https://img.shields.io/npm/v/@cognitivelint/cognitivelint-cli.svg)](https://www.npmjs.com/package/@cognitivelint/cognitivelint-cli)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
 **Your code compiles. Does your UI make sense?**
@@ -48,10 +48,10 @@ $ cognitivelint scan
 ## Installation
 
 ```bash
-npm install -g @dkoul/cognitivelint-cli
+npm install -g @cognitivelint/cognitivelint-cli
 
 # Or run without installing
-npx @dkoul/cognitivelint-cli scan
+npx @cognitivelint/cognitivelint-cli scan
 ```
 
 ## Quick Start
@@ -231,7 +231,7 @@ jobs:
         run: npm ci
       
       - name: Run CognitiveLint
-        run: npx @dkoul/cognitivelint-cli scan -f sarif -o cognitive.sarif --min-score 70
+        run: npx @cognitivelint/cognitivelint-cli scan -f sarif -o cognitive.sarif --min-score 70
       
       - name: Upload SARIF
         uses: github/codeql-action/upload-sarif@v3
@@ -245,7 +245,7 @@ jobs:
 cognitivelint:
   stage: test
   script:
-    - npx @dkoul/cognitivelint-cli scan --min-score 70 -f json -o cognitive-report.json
+    - npx @cognitivelint/cognitivelint-cli scan --min-score 70 -f json -o cognitive-report.json
   artifacts:
     reports:
       codequality: cognitive-report.json
@@ -264,7 +264,7 @@ Tested on production codebases:
 
 ```bash
 # Clone the repo
-git clone https://github.com/dkoul/cognitivelint.git
+git clone https://github.com/cognitivelint/cognitivelint.git
 cd cognitivelint
 
 # Install dependencies
@@ -284,14 +284,14 @@ node packages/cli/dist/index.js scan
 
 | Package | Description |
 |---------|-------------|
-| `@dkoul/cognitivelint-cli` | Command-line interface |
-| `@dkoul/cognitivelint-core` | Core types and scoring algorithm |
-| `@dkoul/cognitivelint-config` | Configuration loading (cosmiconfig) |
-| `@dkoul/cognitivelint-parser-react` | React/JSX AST parsing |
-| `@dkoul/cognitivelint-rule-engine` | Rule execution with visitor pattern |
-| `@dkoul/cognitivelint-rules` | 17 built-in cognitive UX rules |
-| `@dkoul/cognitivelint-formatters` | Terminal, JSON, SARIF, HTML output |
-| `@dkoul/cognitivelint-ai` | AI explanation layer (coming soon) |
+| `@cognitivelint/cognitivelint-cli` | Command-line interface |
+| `@cognitivelint/cognitivelint-core` | Core types and scoring algorithm |
+| `@cognitivelint/cognitivelint-config` | Configuration loading (cosmiconfig) |
+| `@cognitivelint/cognitivelint-parser-react` | React/JSX AST parsing |
+| `@cognitivelint/cognitivelint-rule-engine` | Rule execution with visitor pattern |
+| `@cognitivelint/cognitivelint-rules` | 17 built-in cognitive UX rules |
+| `@cognitivelint/cognitivelint-formatters` | Terminal, JSON, SARIF, HTML output |
+| `@cognitivelint/cognitivelint-ai` | AI explanation layer (coming soon) |
 
 ## Contributing
 

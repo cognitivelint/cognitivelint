@@ -1,5 +1,5 @@
-import { createRule } from '@dkoul/cognitivelint-rule-engine';
-import type { AsyncOperation, ReactComponent } from '@dkoul/cognitivelint-parser-react';
+import { createRule } from '@cognitivelint/cognitivelint-rule-engine';
+import type { AsyncOperation, ReactComponent } from '@cognitivelint/cognitivelint-parser-react';
 
 export const missingLoadingState = createRule({
   meta: {

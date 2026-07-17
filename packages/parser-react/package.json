@@ -1,5 +1,5 @@
 {
-  "name": "@dkoul/cognitivelint-parser-react",
+  "name": "@cognitivelint/cognitivelint-parser-react",
   "version": "0.1.1",
   "type": "module",
   "main": "./dist/index.js",
@@ -20,7 +20,7 @@
     "clean": "rm -rf dist .turbo *.tsbuildinfo"
   },
   "dependencies": {
-    "@dkoul/cognitivelint-core": "0.1.1",
+    "@cognitivelint/cognitivelint-core": "workspace:*",
     "@typescript-eslint/parser": "^8.34.0",
     "@typescript-eslint/typescript-estree": "^8.34.0",
     "@typescript-eslint/types": "^8.34.0"
@@ -30,12 +30,12 @@
   "license": "MIT",
   "repository": {
     "type": "git",
-    "url": "https://github.com/dkoul/cognitivelint.git",
+    "url": "https://github.com/cognitivelint/cognitivelint.git",
     "directory": "packages/parser-react"
   },
-  "homepage": "https://github.com/dkoul/cognitivelint#readme",
+  "homepage": "https://github.com/cognitivelint/cognitivelint#readme",
   "bugs": {
-    "url": "https://github.com/dkoul/cognitivelint/issues"
+    "url": "https://github.com/cognitivelint/cognitivelint/issues"
   },
   "keywords": [
     "cognitivelint",

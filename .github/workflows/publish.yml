@@ -1,0 +1,70 @@
+name: Publish
+
+on:
+  workflow_dispatch:
+  push:
+    tags:
+      - 'v*'
+
+permissions:
+  id-token: write
+  contents: read
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    environment: production
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: pnpm/action-setup@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: '.nvmrc'
+          registry-url: 'https://registry.npmjs.org'
+
+      - run: npm install -g npm@latest
+
+      - run: pnpm install --frozen-lockfile
+
+      - run: pnpm run build
+
+      - name: Bump to canary version
+        if: github.ref_type != 'tag'
+        run: |
+          SHA=$(git rev-parse --short HEAD)
+          for pkg in packages/*/package.json; do
+            node -e "
+              const fs = require('fs');
+              const p = JSON.parse(fs.readFileSync('$pkg'));
+              p.version = p.version + '-canary.' + '$SHA';
+              fs.writeFileSync('$pkg', JSON.stringify(p, null, 2) + '\n');
+            "
+          done
+
+      - name: Publish
+        run: |
+          if [[ "${{ github.ref_type }}" == "tag" ]]; then
+            TAG_FLAG=""
+          else
+            TAG_FLAG="--tag canary"
+          fi
+
+          publish() {
+            local dir="$1"
+            cd "$dir"
+            local tarball
+            tarball=$(pnpm pack | tail -1)
+            npm publish "$tarball" --access public $TAG_FLAG
+            rm -f "$tarball"
+            cd -
+          }
+          publish packages/core
+          publish packages/config
+          publish packages/parser-react
+          publish packages/formatters
+          publish packages/rule-engine
+          publish packages/rules
+          publish packages/ai
+          publish packages/cli

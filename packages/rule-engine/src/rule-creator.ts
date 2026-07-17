@@ -1,4 +1,4 @@
-import type { Rule, RuleMeta, RuleContext, RuleVisitor } from '@dkoul/cognitivelint-core';
+import type { Rule, RuleMeta, RuleContext, RuleVisitor } from '@cognitivelint/cognitivelint-core';
 
 export interface RuleModule<TOptions = unknown> {
   meta: RuleMeta;

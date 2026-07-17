@@ -1,5 +1,5 @@
 {
-  "name": "@dkoul/cognitivelint-ai",
+  "name": "@cognitivelint/cognitivelint-ai",
   "version": "0.1.1",
   "type": "module",
   "main": "./dist/index.js",
@@ -20,7 +20,7 @@
     "clean": "rm -rf dist .turbo *.tsbuildinfo"
   },
   "dependencies": {
-    "@dkoul/cognitivelint-core": "0.1.1",
+    "@cognitivelint/cognitivelint-core": "workspace:*",
     "@anthropic-ai/sdk": "^0.52.0"
   },
   "description": "CognitiveLint - SonarQube for Cognitive UX",
@@ -28,12 +28,12 @@
   "license": "MIT",
   "repository": {
     "type": "git",
-    "url": "https://github.com/dkoul/cognitivelint.git",
+    "url": "https://github.com/cognitivelint/cognitivelint.git",
     "directory": "packages/ai"
   },
-  "homepage": "https://github.com/dkoul/cognitivelint#readme",
+  "homepage": "https://github.com/cognitivelint/cognitivelint#readme",
   "bugs": {
-    "url": "https://github.com/dkoul/cognitivelint/issues"
+    "url": "https://github.com/cognitivelint/cognitivelint/issues"
   },
   "keywords": [
     "cognitivelint",

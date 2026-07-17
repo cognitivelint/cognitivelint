@@ -1,5 +1,5 @@
 {
-  "name": "@dkoul/cognitivelint-rule-engine",
+  "name": "@cognitivelint/cognitivelint-rule-engine",
   "version": "0.1.1",
   "type": "module",
   "main": "./dist/index.js",
@@ -20,20 +20,20 @@
     "clean": "rm -rf dist .turbo *.tsbuildinfo"
   },
   "dependencies": {
-    "@dkoul/cognitivelint-core": "0.1.1",
-    "@dkoul/cognitivelint-parser-react": "0.1.1"
+    "@cognitivelint/cognitivelint-core": "workspace:*",
+    "@cognitivelint/cognitivelint-parser-react": "workspace:*"
   },
   "description": "CognitiveLint - SonarQube for Cognitive UX",
   "author": "Deepak Koul",
   "license": "MIT",
   "repository": {
     "type": "git",
-    "url": "https://github.com/dkoul/cognitivelint.git",
+    "url": "https://github.com/cognitivelint/cognitivelint.git",
     "directory": "packages/rule-engine"
   },
-  "homepage": "https://github.com/dkoul/cognitivelint#readme",
+  "homepage": "https://github.com/cognitivelint/cognitivelint#readme",
   "bugs": {
-    "url": "https://github.com/dkoul/cognitivelint/issues"
+    "url": "https://github.com/cognitivelint/cognitivelint/issues"
   },
   "keywords": [
     "cognitivelint",

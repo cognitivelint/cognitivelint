@@ -1,5 +1,5 @@
-import { createRule } from '@dkoul/cognitivelint-rule-engine';
-import type { ReactComponent, JSXElementInfo } from '@dkoul/cognitivelint-parser-react';
+import { createRule } from '@cognitivelint/cognitivelint-rule-engine';
+import type { ReactComponent, JSXElementInfo } from '@cognitivelint/cognitivelint-parser-react';
 
 const DATA_LIST_PATTERNS = ['datalist', 'datatable', 'datagrid', 'itemlist', 'resourcelist', 'resultlist'];
 const EMPTY_PATTERNS = ['empty', 'nodata', 'noresults', 'placeholder', 'emptystate', 'zeroresults'];
