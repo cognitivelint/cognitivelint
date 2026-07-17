@@ -1,0 +1,31 @@
+{
+  "name": "cognitivelint",
+  "private": true,
+  "description": "SonarQube for Cognitive UX - Detect cognitive friction in React applications",
+  "keywords": ["cognitivelint", "ux", "react", "lint", "cognitive", "accessibility", "usability"],
+  "author": "CognitiveLint Team",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/cognitivelint/cognitivelint.git"
+  },
+  "type": "module",
+  "scripts": {
+    "build": "turbo run build",
+    "dev": "turbo run dev --parallel",
+    "test": "vitest run",
+    "lint": "turbo run lint",
+    "typecheck": "turbo run typecheck",
+    "clean": "turbo run clean && rm -rf node_modules"
+  },
+  "devDependencies": {
+    "turbo": "^2.5.4",
+    "typescript": "^5.8.3",
+    "vitest": "^3.2.4",
+    "@types/node": "^22.15.32"
+  },
+  "packageManager": "pnpm@10.12.1",
+  "engines": {
+    "node": ">=20.0.0"
+  }
+}

@@ -1,0 +1,39 @@
+{
+  "name": "@cognitivelint/cli",
+  "version": "0.1.0",
+  "description": "CLI for CognitiveLint - SonarQube for Cognitive UX",
+  "keywords": ["cognitivelint", "ux", "react", "lint", "cognitive", "accessibility", "usability"],
+  "author": "CognitiveLint Team",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/cognitivelint/cognitivelint.git",
+    "directory": "packages/cli"
+  },
+  "type": "module",
+  "bin": {
+    "cognitivelint": "./dist/index.js"
+  },
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "files": ["dist"],
+  "scripts": {
+    "build": "tsc",
+    "dev": "tsc --watch",
+    "test": "vitest run",
+    "typecheck": "tsc --noEmit",
+    "clean": "rm -rf dist .turbo *.tsbuildinfo"
+  },
+  "dependencies": {
+    "@cognitivelint/core": "workspace:*",
+    "@cognitivelint/config": "workspace:*",
+    "@cognitivelint/parser-react": "workspace:*",
+    "@cognitivelint/rule-engine": "workspace:*",
+    "@cognitivelint/rules": "workspace:*",
+    "@cognitivelint/formatters": "workspace:*",
+    "commander": "^13.1.0",
+    "chalk": "^5.4.1",
+    "ora": "^8.2.0",
+    "glob": "^11.0.2"
+  }
+}

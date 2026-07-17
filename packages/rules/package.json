@@ -1,0 +1,26 @@
+{
+  "name": "@cognitivelint/rules",
+  "version": "0.1.0",
+  "type": "module",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
+    }
+  },
+  "files": ["dist"],
+  "scripts": {
+    "build": "tsc",
+    "dev": "tsc --watch",
+    "test": "vitest run",
+    "typecheck": "tsc --noEmit",
+    "clean": "rm -rf dist .turbo *.tsbuildinfo"
+  },
+  "dependencies": {
+    "@cognitivelint/core": "workspace:*",
+    "@cognitivelint/parser-react": "workspace:*",
+    "@cognitivelint/rule-engine": "workspace:*"
+  }
+}

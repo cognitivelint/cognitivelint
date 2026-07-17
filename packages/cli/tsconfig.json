@@ -1,0 +1,16 @@
+{
+  "extends": "../../tsconfig.base.json",
+  "compilerOptions": {
+    "outDir": "./dist",
+    "rootDir": "./src"
+  },
+  "include": ["src/**/*"],
+  "references": [
+    { "path": "../core" },
+    { "path": "../config" },
+    { "path": "../parser-react" },
+    { "path": "../rule-engine" },
+    { "path": "../rules" },
+    { "path": "../formatters" }
+  ]
+}
