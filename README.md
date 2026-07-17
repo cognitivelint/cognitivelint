@@ -3,17 +3,54 @@
 [![npm version](https://img.shields.io/npm/v/@dkoul/cognitivelint-cli.svg)](https://www.npmjs.com/package/@dkoul/cognitivelint-cli)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
-**SonarQube for Cognitive UX**
+**Your code compiles. Does your UI make sense?**
 
-CognitiveLint automatically detects cognitive friction in React applications before code reaches production. While tools exist for code quality (SonarQube), performance (Lighthouse), and accessibility (axe), CognitiveLint fills the gap for measuring how much mental effort users must spend to complete tasks.
+*SonarQube for Cognitive UX* — static analysis that finds human bugs before your users do.
+
+## What You Get
+
+```
+$ cognitivelint scan
+
+  CognitiveLint v0.1.1
+
+  Scanning 847 files...
+
+  ┌──────────────────────────────────────────────────────────────────────┐
+  │  Cognitive Score: 72/100 (C)                                         │
+  │                                                                      │
+  │  Cognitive Load     ████████░░  78%   Error Prevention  ███████░░░  68%  │
+  │  Trust & Confidence ███████░░░  71%   Discoverability   ████████░░  76%  │
+  │  Feedback           ██████░░░░  62%   Consistency       █████████░  88%  │
+  └──────────────────────────────────────────────────────────────────────┘
+
+  Human Bugs Found: 23
+
+  src/components/UserTable.tsx
+    ✗ 45:12  User may accidentally delete important data
+             Destructive action has no confirmation step [destructive-no-confirm]
+
+    ✗ 89:8   User cannot understand why this action is unavailable
+             Disabled button offers no explanation [unexplained-disabled]
+
+  src/pages/Checkout.tsx
+    ✗ 112:4  User cannot see where they are in the process
+             Multi-step flow has no progress indicator [no-progress-indicator]
+
+    ✗ 156:8  System appears unresponsive during operation
+             Async operation has no loading feedback [missing-loading-state]
+
+  src/components/TeamDashboard.tsx
+    ✗ 34:6   User cannot determine item ownership
+             Shared list lacks owner attribution [ownership-ambiguity]
+```
 
 ## Installation
 
 ```bash
-# Install globally
 npm install -g @dkoul/cognitivelint-cli
 
-# Or use npx (no install required)
+# Or run without installing
 npx @dkoul/cognitivelint-cli scan
 ```
 
@@ -21,11 +58,7 @@ npx @dkoul/cognitivelint-cli scan
 
 ```bash
 # Scan your React project
-cd your-react-project
 cognitivelint scan
-
-# Output as JSON
-cognitivelint scan -f json
 
 # Generate HTML report
 cognitivelint scan -f html -o report.html
@@ -34,74 +67,62 @@ cognitivelint scan -f html -o report.html
 cognitivelint scan --min-score 80
 ```
 
-## What It Finds
+## Why This Exists
 
-CognitiveLint detects real UX issues:
+Tools exist for code quality (SonarQube), performance (Lighthouse), and accessibility (axe). But nothing measures **cognitive friction** — how much mental effort users spend completing tasks.
 
-```
-src/components/UserTable.tsx
-  ● 45:12   Destructive action lacks confirmation. Users may accidentally delete important data.
-  ● 89:8    Disabled button has no explanation. Users cannot understand why this action is unavailable.
-  ● 112:4   Multi-step flow lacks progress indicator. Users cannot see where they are in the process.
-```
+CognitiveLint finds human bugs: places where your UI compiles and runs but leaves users confused, anxious, or stuck.
 
-## Features
+## Human Bugs Detected
 
-- **17 Cognitive UX Rules** across 6 categories
-- **Fast**: Analyzes 1000+ files in ~2 seconds
-- **Weighted Scoring**: 0-100 score with letter grades (A-F)
-- **Multiple Output Formats**: Terminal, JSON, SARIF, HTML
-- **CI/CD Ready**: Threshold-based exit codes for build gates
-- **GitHub Integration**: SARIF output for Code Scanning
+CognitiveLint finds **17 human bugs** across 6 cognitive categories:
 
-## Rules
+### Feedback — "Is anything happening?"
+| Human Bug | Rule ID | Severity |
+|-----------|---------|----------|
+| System appears unresponsive during operation | `missing-loading-state` | High |
+| User sees no content but gets no explanation | `missing-empty-state` | Medium |
+| User doesn't know if their action worked | `missing-success-feedback` | Medium |
+| User cannot see where they are in the process | `no-progress-indicator` | Medium |
 
-### Feedback (4 rules)
-| Rule | Severity | Description |
-|------|----------|-------------|
-| `feedback/missing-loading-state` | High | Async fetch without loading indicator |
-| `feedback/missing-empty-state` | Medium | Data lists without empty state handling |
-| `feedback/missing-success-feedback` | Medium | Mutations without success confirmation |
-| `feedback/no-progress-indicator` | Medium | Multi-step flows without progress display |
+### Trust & Confidence — "Can I trust this?"
+| Human Bug | Rule ID | Severity |
+|-----------|---------|----------|
+| User cannot understand why action is unavailable | `unexplained-disabled` | Medium |
+| User cannot determine item ownership | `ownership-ambiguity` | Medium |
+| User cannot verify who owns shared resources | `missing-ownership` | Low |
 
-### Trust & Confidence (3 rules)
-| Rule | Severity | Description |
-|------|----------|-------------|
-| `trust-confidence/unexplained-disabled` | Medium | Disabled buttons without tooltips |
-| `trust-confidence/ownership-ambiguity` | Medium | Shared lists without ownership indicators |
-| `trust-confidence/missing-ownership` | Low | RBAC contexts without owner display |
+### Error Prevention — "What if I mess up?"
+| Human Bug | Rule ID | Severity |
+|-----------|---------|----------|
+| User may accidentally destroy important data | `destructive-no-confirm` | Critical |
+| User cannot recover from destructive action | `no-undo` | High |
+| User gets trapped in nested modal hell | `modal-nesting` | High |
+| User becomes desensitized to confirmations | `confirmation-fatigue` | Medium |
 
-### Error Prevention (4 rules)
-| Rule | Severity | Description |
-|------|----------|-------------|
-| `error-prevention/destructive-no-confirm` | Critical | Delete actions without confirmation |
-| `error-prevention/no-undo` | High | Destructive actions without undo capability |
-| `error-prevention/modal-nesting` | High | Nested modals/dialogs |
-| `error-prevention/confirmation-fatigue` | Medium | Too many confirmation dialogs |
+### Cognitive Load — "This is overwhelming"
+| Human Bug | Rule ID | Severity |
+|-----------|---------|----------|
+| User cannot identify the primary action | `excessive-primary-actions` | Medium |
+| User faces wall of form fields | `long-forms` | Medium |
+| User drowns in filter options | `filter-overload` | Medium |
+| User loses track in dense data tables | `dense-tables` | Medium |
 
-### Cognitive Load (4 rules)
-| Rule | Severity | Description |
-|------|----------|-------------|
-| `cognitive-load/excessive-primary-actions` | Medium | Too many primary buttons (>2) |
-| `cognitive-load/long-forms` | Medium | Forms with >8 fields without grouping |
-| `cognitive-load/filter-overload` | Medium | Too many filter options (>7) |
-| `cognitive-load/dense-tables` | Medium | Tables with >10 columns |
+### Discoverability — "How do I find this?"
+| Human Bug | Rule ID | Severity |
+|-----------|---------|----------|
+| User cannot search large datasets | `missing-search` | Medium |
+| User misses primary action below fold | `hidden-primary-action` | Medium |
+| User clicks navigation that goes nowhere | `empty-navigation` | Medium |
 
-### Discoverability (3 rules)
-| Rule | Severity | Description |
-|------|----------|-------------|
-| `discoverability/missing-search` | Medium | Large paginated lists without search |
-| `discoverability/hidden-primary-action` | Medium | Primary actions in scrollable containers |
-| `discoverability/empty-navigation` | Medium | Navigation links with invalid destinations |
-
-### Consistency (1 rule)
-| Rule | Severity | Description |
-|------|----------|-------------|
-| `consistency/inconsistent-button-labels` | Low | Mixed terminology (Save/Submit/Apply) |
+### Consistency — "Why does this work differently?"
+| Human Bug | Rule ID | Severity |
+|-----------|---------|----------|
+| User confused by mixed terminology | `inconsistent-button-labels` | Low |
 
 ## Scoring
 
-CognitiveLint calculates a weighted score across 6 cognitive categories:
+CognitiveLint calculates a weighted score across cognitive categories:
 
 | Category | Weight | What It Measures |
 |----------|--------|------------------|
@@ -132,7 +153,7 @@ cognitivelint scan -f html -o report.html
 # Fail if score below threshold (for CI)
 cognitivelint scan --min-score 80
 
-# Fail if too many findings
+# Fail if too many human bugs
 cognitivelint scan --max-findings 10
 ```
 
@@ -176,7 +197,7 @@ export default {
 
 ### Disabling Rules for UI Libraries
 
-If you're using Radix UI, Headless UI, or PatternFly, you may want to disable the `modal-nesting` rule which can produce false positives on component library patterns:
+If you're using Radix UI, Headless UI, or PatternFly, disable the `modal-nesting` rule which can produce false positives on component library patterns:
 
 ```javascript
 export default {
@@ -234,8 +255,8 @@ cognitivelint:
 
 Tested on production codebases:
 
-| Project | Files | Time | Score | Findings |
-|---------|-------|------|-------|----------|
+| Project | Files | Time | Score | Human Bugs |
+|---------|-------|------|-------|------------|
 | cal.com | 962 | 2.0s | 67 (D) | 140 |
 | migration-planner-ui | 122 | 0.4s | 88 (B) | 33 |
 
@@ -243,7 +264,7 @@ Tested on production codebases:
 
 ```bash
 # Clone the repo
-git clone https://github.com/your-org/cognitivelint.git
+git clone https://github.com/dkoul/cognitivelint.git
 cd cognitivelint
 
 # Install dependencies
