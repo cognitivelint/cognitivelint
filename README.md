@@ -1,21 +1,37 @@
 # CognitiveLint
 
+[![npm version](https://img.shields.io/npm/v/@dkoul/cognitivelint-cli.svg)](https://www.npmjs.com/package/@dkoul/cognitivelint-cli)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+
 **SonarQube for Cognitive UX**
 
 CognitiveLint automatically detects cognitive friction in React applications before code reaches production. While tools exist for code quality (SonarQube), performance (Lighthouse), and accessibility (axe), CognitiveLint fills the gap for measuring how much mental effort users must spend to complete tasks.
 
-## Quick Start
+## Installation
 
 ```bash
 # Install globally
 npm install -g @dkoul/cognitivelint-cli
 
-# Or run directly with npx
+# Or use npx (no install required)
 npx @dkoul/cognitivelint-cli scan
+```
 
+## Quick Start
+
+```bash
 # Scan your React project
 cd your-react-project
 cognitivelint scan
+
+# Output as JSON
+cognitivelint scan -f json
+
+# Generate HTML report
+cognitivelint scan -f html -o report.html
+
+# CI mode - fail if score below threshold
+cognitivelint scan --min-score 80
 ```
 
 ## What It Finds

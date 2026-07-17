@@ -1,14 +1,18 @@
 {
   "name": "@dkoul/cognitivelint-cli",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "CLI for CognitiveLint - SonarQube for Cognitive UX",
   "keywords": ["cognitivelint", "ux", "react", "lint", "cognitive", "accessibility", "usability"],
-  "author": "CognitiveLint Team",
+  "author": "Deepak Koul",
   "license": "MIT",
   "repository": {
     "type": "git",
-    "url": "https://github.com/cognitivelint/cognitivelint.git",
+    "url": "https://github.com/dkoul/cognitivelint.git",
     "directory": "packages/cli"
+  },
+  "homepage": "https://github.com/dkoul/cognitivelint#readme",
+  "bugs": {
+    "url": "https://github.com/dkoul/cognitivelint/issues"
   },
   "type": "module",
   "bin": {
@@ -25,15 +29,15 @@
     "clean": "rm -rf dist .turbo *.tsbuildinfo"
   },
   "dependencies": {
-    "@dkoul/cognitivelint-core": "workspace:*",
-    "@dkoul/cognitivelint-config": "workspace:*",
-    "@dkoul/cognitivelint-parser-react": "workspace:*",
-    "@dkoul/cognitivelint-rule-engine": "workspace:*",
-    "@dkoul/cognitivelint-rules": "workspace:*",
-    "@dkoul/cognitivelint-formatters": "workspace:*",
+    "@dkoul/cognitivelint-core": "0.1.1",
+    "@dkoul/cognitivelint-config": "0.1.1",
+    "@dkoul/cognitivelint-parser-react": "0.1.1",
+    "@dkoul/cognitivelint-rule-engine": "0.1.1",
+    "@dkoul/cognitivelint-rules": "0.1.1",
+    "@dkoul/cognitivelint-formatters": "0.1.1",
     "commander": "^13.1.0",
     "chalk": "^5.4.1",
     "ora": "^8.2.0",
-    "glob": "^11.0.2"
+    "glob": "^13.0.6"
   }
 }

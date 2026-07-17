@@ -1,6 +1,19 @@
 {
   "name": "@dkoul/cognitivelint-core",
-  "version": "0.1.0",
+  "version": "0.1.1",
+  "description": "Core types and scoring for CognitiveLint",
+  "author": "Deepak Koul",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/dkoul/cognitivelint.git",
+    "directory": "packages/core"
+  },
+  "homepage": "https://github.com/dkoul/cognitivelint#readme",
+  "bugs": {
+    "url": "https://github.com/dkoul/cognitivelint/issues"
+  },
+  "keywords": ["cognitivelint", "ux", "cognitive", "react", "lint"],
   "type": "module",
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",
