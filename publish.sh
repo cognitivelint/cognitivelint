@@ -13,8 +13,10 @@ fi
 
 OTP=$1
 
-echo "Publishing @dkoul/cognitivelint packages with OTP: $OTP"
+echo "Publishing @cognitivelint packages with OTP: $OTP"
 echo ""
+
+REPO_ROOT="$(cd "$(dirname "$0")" && pwd)"
 
 # Publish in dependency order
 packages=(
@@ -29,16 +31,16 @@ packages=(
 )
 
 for pkg in "${packages[@]}"; do
-  echo "📦 Publishing @dkoul/cognitivelint-$pkg..."
-  (cd "/Users/dkoul/cognitiveLint/packages/$pkg" && npm publish --access public --otp "$OTP")
-  echo "✅ @dkoul/cognitivelint-$pkg published!"
+  echo "Publishing @cognitivelint/$pkg..."
+  (cd "$REPO_ROOT/packages/$pkg" && npm publish --access public --otp "$OTP")
+  echo "@cognitivelint/$pkg published!"
   echo ""
 done
 
-echo "🎉 All packages published successfully!"
+echo "All packages published successfully!"
 echo ""
 echo "Install with:"
-echo "  npm install -g @dkoul/cognitivelint-cli"
+echo "  npm install -g @cognitivelint/cli"
 echo ""
 echo "Or run directly:"
-echo "  npx @dkoul/cognitivelint-cli scan"
+echo "  npx @cognitivelint/cli scan"

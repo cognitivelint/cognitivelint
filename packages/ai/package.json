@@ -1,5 +1,5 @@
 {
-  "name": "@cognitivelint/cognitivelint-ai",
+  "name": "@cognitivelint/ai",
   "version": "0.1.1",
   "type": "module",
   "main": "./dist/index.js",
@@ -20,7 +20,7 @@
     "clean": "rm -rf dist .turbo *.tsbuildinfo"
   },
   "dependencies": {
-    "@cognitivelint/cognitivelint-core": "workspace:*",
+    "@cognitivelint/core": "workspace:*",
     "@anthropic-ai/sdk": "^0.52.0"
   },
   "description": "CognitiveLint - SonarQube for Cognitive UX",

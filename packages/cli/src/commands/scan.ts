@@ -4,13 +4,13 @@ import ora from 'ora';
 import chalk from 'chalk';
 import path from 'path';
 
-import { loadConfig } from '@cognitivelint/cognitivelint-config';
-import { parseReactFile } from '@cognitivelint/cognitivelint-parser-react';
-import { RuleEngine } from '@cognitivelint/cognitivelint-rule-engine';
-import { getAllRules } from '@cognitivelint/cognitivelint-rules';
-import { calculateScore } from '@cognitivelint/cognitivelint-core';
-import { getFormatter } from '@cognitivelint/cognitivelint-formatters';
-import type { Finding, Report, Severity, CognitiveCategory } from '@cognitivelint/cognitivelint-core';
+import { loadConfig } from '@cognitivelint/config';
+import { parseReactFile } from '@cognitivelint/parser-react';
+import { RuleEngine } from '@cognitivelint/rule-engine';
+import { getAllRules } from '@cognitivelint/rules';
+import { calculateScore } from '@cognitivelint/core';
+import { getFormatter } from '@cognitivelint/formatters';
+import type { Finding, Report, Severity, CognitiveCategory } from '@cognitivelint/core';
 
 export interface ScanOptions {
   config?: string;

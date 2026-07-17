@@ -3,13 +3,13 @@ import type {
   Finding,
   RuleContext,
   ParserServices,
-} from '@cognitivelint/cognitivelint-core';
+} from '@cognitivelint/core';
 import type {
   ReactComponent,
   JSXElementInfo,
   AsyncOperation,
   ConditionalRender,
-} from '@cognitivelint/cognitivelint-parser-react';
+} from '@cognitivelint/parser-react';
 
 export interface EngineOptions {
   rules: Rule[];

@@ -1,6 +1,6 @@
 import { cosmiconfig } from 'cosmiconfig';
-import type { Config } from '@cognitivelint/cognitivelint-core';
-import { DEFAULT_CONFIG } from '@cognitivelint/cognitivelint-core';
+import type { Config } from '@cognitivelint/core';
+import { DEFAULT_CONFIG } from '@cognitivelint/core';
 
 const MODULE_NAME = 'cognitivelint';
 
@@ -61,5 +61,5 @@ function mergeConfig(base: Config, override: Partial<Config>): Config {
   return merged;
 }
 
-export { DEFAULT_CONFIG } from '@cognitivelint/cognitivelint-core';
-export type { Config } from '@cognitivelint/cognitivelint-core';
+export { DEFAULT_CONFIG } from '@cognitivelint/core';
+export type { Config } from '@cognitivelint/core';

@@ -1,6 +1,6 @@
 # CognitiveLint
 
-[![npm version](https://img.shields.io/npm/v/@cognitivelint/cognitivelint-cli.svg)](https://www.npmjs.com/package/@cognitivelint/cognitivelint-cli)
+[![npm version](https://img.shields.io/npm/v/@cognitivelint/cli.svg)](https://www.npmjs.com/package/@cognitivelint/cli)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
 **Your code compiles. Does your UI make sense?**
@@ -48,10 +48,10 @@ $ cognitivelint scan
 ## Installation
 
 ```bash
-npm install -g @cognitivelint/cognitivelint-cli
+npm install -g @cognitivelint/cli
 
 # Or run without installing
-npx @cognitivelint/cognitivelint-cli scan
+npx @cognitivelint/cli scan
 ```
 
 ## Quick Start
@@ -231,7 +231,7 @@ jobs:
         run: npm ci
       
       - name: Run CognitiveLint
-        run: npx @cognitivelint/cognitivelint-cli scan -f sarif -o cognitive.sarif --min-score 70
+        run: npx @cognitivelint/cli scan -f sarif -o cognitive.sarif --min-score 70
       
       - name: Upload SARIF
         uses: github/codeql-action/upload-sarif@v3
@@ -245,7 +245,7 @@ jobs:
 cognitivelint:
   stage: test
   script:
-    - npx @cognitivelint/cognitivelint-cli scan --min-score 70 -f json -o cognitive-report.json
+    - npx @cognitivelint/cli scan --min-score 70 -f json -o cognitive-report.json
   artifacts:
     reports:
       codequality: cognitive-report.json
@@ -284,14 +284,14 @@ node packages/cli/dist/index.js scan
 
 | Package | Description |
 |---------|-------------|
-| `@cognitivelint/cognitivelint-cli` | Command-line interface |
-| `@cognitivelint/cognitivelint-core` | Core types and scoring algorithm |
-| `@cognitivelint/cognitivelint-config` | Configuration loading (cosmiconfig) |
-| `@cognitivelint/cognitivelint-parser-react` | React/JSX AST parsing |
-| `@cognitivelint/cognitivelint-rule-engine` | Rule execution with visitor pattern |
-| `@cognitivelint/cognitivelint-rules` | 17 built-in cognitive UX rules |
-| `@cognitivelint/cognitivelint-formatters` | Terminal, JSON, SARIF, HTML output |
-| `@cognitivelint/cognitivelint-ai` | AI explanation layer (coming soon) |
+| `@cognitivelint/cli` | Command-line interface |
+| `@cognitivelint/core` | Core types and scoring algorithm |
+| `@cognitivelint/config` | Configuration loading (cosmiconfig) |
+| `@cognitivelint/parser-react` | React/JSX AST parsing |
+| `@cognitivelint/rule-engine` | Rule execution with visitor pattern |
+| `@cognitivelint/rules` | 17 built-in cognitive UX rules |
+| `@cognitivelint/formatters` | Terminal, JSON, SARIF, HTML output |
+| `@cognitivelint/ai` | AI explanation layer (coming soon) |
 
 ## Contributing
 
@@ -309,7 +309,7 @@ When your PR is merged to `main`, the changesets bot opens a **Release PR** that
 
 To publish a canary version for testing:
 - Trigger the **Canary** workflow manually from GitHub Actions
-- Install with `npm install @cognitivelint/cognitivelint-cli@canary`
+- Install with `npm install @cognitivelint/cli@canary`
 
 ## License
 

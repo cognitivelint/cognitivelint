@@ -1,5 +1,5 @@
 import chalk from 'chalk';
-import type { Report, Finding, CognitiveScore, Severity } from '@cognitivelint/cognitivelint-core';
+import type { Report, Finding, CognitiveScore, Severity } from '@cognitivelint/core';
 import type { Formatter, FormatterOptions } from './types.js';
 
 const SEVERITY_COLORS: Record<Severity, (text: string) => string> = {

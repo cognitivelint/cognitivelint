@@ -1,5 +1,5 @@
 import Anthropic from '@anthropic-ai/sdk';
-import type { Finding, Rule } from '@cognitivelint/cognitivelint-core';
+import type { Finding, Rule } from '@cognitivelint/core';
 import type { AIProvider, Explanation, FixSuggestion } from './types.js';
 
 export class AnthropicProvider implements AIProvider {

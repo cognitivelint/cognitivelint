@@ -1,6 +1,6 @@
-import { parseReactFile } from '@cognitivelint/cognitivelint-parser-react';
-import { RuleEngine } from '@cognitivelint/cognitivelint-rule-engine';
-import type { Rule, Finding } from '@cognitivelint/cognitivelint-core';
+import { parseReactFile } from '@cognitivelint/parser-react';
+import { RuleEngine } from '@cognitivelint/rule-engine';
+import type { Rule, Finding } from '@cognitivelint/core';
 
 export interface TestCase {
   name: string;

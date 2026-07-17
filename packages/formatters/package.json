@@ -1,5 +1,5 @@
 {
-  "name": "@cognitivelint/cognitivelint-formatters",
+  "name": "@cognitivelint/formatters",
   "version": "0.1.1",
   "type": "module",
   "main": "./dist/index.js",
@@ -20,7 +20,7 @@
     "clean": "rm -rf dist .turbo *.tsbuildinfo"
   },
   "dependencies": {
-    "@cognitivelint/cognitivelint-core": "workspace:*",
+    "@cognitivelint/core": "workspace:*",
     "chalk": "^5.4.1"
   },
   "description": "CognitiveLint - SonarQube for Cognitive UX",

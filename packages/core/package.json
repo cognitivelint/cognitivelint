@@ -1,5 +1,5 @@
 {
-  "name": "@cognitivelint/cognitivelint-core",
+  "name": "@cognitivelint/core",
   "version": "0.1.1",
   "description": "Core types and scoring for CognitiveLint",
   "author": "Deepak Koul",

@@ -1,4 +1,4 @@
-import type { Rule } from '@cognitivelint/cognitivelint-core';
+import type { Rule } from '@cognitivelint/core';
 
 import {
   missingLoadingState,
