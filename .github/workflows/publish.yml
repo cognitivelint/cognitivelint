@@ -1,21 +1,23 @@
 name: Publish
 
 on:
-  workflow_dispatch:
   push:
-    tags:
-      - 'v*'
+    branches:
+      - main
 
 permissions:
   id-token: write
-  contents: read
+  contents: write
+  pull-requests: write
 
 jobs:
-  publish:
+  release:
     runs-on: ubuntu-latest
     environment: production
     steps:
       - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
 
       - uses: pnpm/action-setup@v4
 
@@ -30,41 +32,11 @@ jobs:
 
       - run: pnpm run build
 
-      - name: Bump to canary version
-        if: github.ref_type != 'tag'
-        run: |
-          SHA=$(git rev-parse --short HEAD)
-          for pkg in packages/*/package.json; do
-            node -e "
-              const fs = require('fs');
-              const p = JSON.parse(fs.readFileSync('$pkg'));
-              p.version = p.version + '-canary.' + '$SHA';
-              fs.writeFileSync('$pkg', JSON.stringify(p, null, 2) + '\n');
-            "
-          done
-
-      - name: Publish
-        run: |
-          if [[ "${{ github.ref_type }}" == "tag" ]]; then
-            TAG_FLAG=""
-          else
-            TAG_FLAG="--tag canary"
-          fi
-
-          publish() {
-            local dir="$1"
-            cd "$dir"
-            local tarball
-            tarball=$(pnpm pack | tail -1)
-            npm publish "$tarball" --access public $TAG_FLAG
-            rm -f "$tarball"
-            cd -
-          }
-          publish packages/core
-          publish packages/config
-          publish packages/parser-react
-          publish packages/formatters
-          publish packages/rule-engine
-          publish packages/rules
-          publish packages/ai
-          publish packages/cli
+      - uses: changesets/action@v1
+        with:
+          publish: pnpm changeset publish
+          version: pnpm changeset version
+          title: 'chore: release packages'
+          commit: 'chore: version packages'
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

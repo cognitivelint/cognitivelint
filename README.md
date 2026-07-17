@@ -295,10 +295,21 @@ node packages/cli/dist/index.js scan
 
 ## Contributing
 
-1. Fork the repository
-2. Create a feature branch
-3. Add tests for new rules
-4. Submit a pull request
+1. Fork the repository and create a feature branch
+2. Make your changes and add tests for new rules
+3. Add a changeset describing your change:
+   ```bash
+   pnpm changeset
+   ```
+   Follow the prompts — select affected packages and bump type (patch/minor/major)
+4. Commit both your changes and the generated `.changeset/*.md` file
+5. Submit a pull request
+
+When your PR is merged to `main`, the changesets bot opens a **Release PR** that bumps versions and generates changelogs. Merging the Release PR publishes all changed packages to npm automatically.
+
+To publish a canary version for testing:
+- Trigger the **Canary** workflow manually from GitHub Actions
+- Install with `npm install @cognitivelint/cognitivelint-cli@canary`
 
 ## License
 
