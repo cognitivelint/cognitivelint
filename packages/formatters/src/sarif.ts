@@ -1,4 +1,4 @@
-import type { Report, Finding, Severity } from '@cognitivelint/core';
+import type { Report, Finding, Severity } from '@dkoul/cognitivelint-core';
 import type { Formatter, FormatterOptions } from './types.js';
 
 type SarifLevel = 'error' | 'warning' | 'note' | 'none';

@@ -1,5 +1,5 @@
 {
-  "name": "@cognitivelint/formatters",
+  "name": "@dkoul/cognitivelint-formatters",
   "version": "0.1.0",
   "type": "module",
   "main": "./dist/index.js",
@@ -18,7 +18,7 @@
     "clean": "rm -rf dist .turbo *.tsbuildinfo"
   },
   "dependencies": {
-    "@cognitivelint/core": "workspace:*",
+    "@dkoul/cognitivelint-core": "workspace:*",
     "chalk": "^5.4.1"
   }
 }

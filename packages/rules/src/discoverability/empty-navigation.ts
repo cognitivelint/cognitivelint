@@ -1,5 +1,5 @@
-import { createRule } from '@cognitivelint/rule-engine';
-import type { ReactComponent, JSXElementInfo } from '@cognitivelint/parser-react';
+import { createRule } from '@dkoul/cognitivelint-rule-engine';
+import type { ReactComponent, JSXElementInfo } from '@dkoul/cognitivelint-parser-react';
 
 const NAV_PATTERNS = ['nav', 'sidebar', 'menu', 'navigation'];
 const LINK_PATTERNS = ['link', 'navlink', 'menuitem'];

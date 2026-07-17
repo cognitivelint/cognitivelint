@@ -26,28 +26,28 @@ importers:
       '@anthropic-ai/sdk':
         specifier: ^0.52.0
         version: 0.52.0
-      '@cognitivelint/core':
+      '@dkoul/cognitivelint-core':
         specifier: workspace:*
         version: link:../core
 
   packages/cli:
     dependencies:
-      '@cognitivelint/config':
+      '@dkoul/cognitivelint-config':
         specifier: workspace:*
         version: link:../config
-      '@cognitivelint/core':
+      '@dkoul/cognitivelint-core':
         specifier: workspace:*
         version: link:../core
-      '@cognitivelint/formatters':
+      '@dkoul/cognitivelint-formatters':
         specifier: workspace:*
         version: link:../formatters
-      '@cognitivelint/parser-react':
+      '@dkoul/cognitivelint-parser-react':
         specifier: workspace:*
         version: link:../parser-react
-      '@cognitivelint/rule-engine':
+      '@dkoul/cognitivelint-rule-engine':
         specifier: workspace:*
         version: link:../rule-engine
-      '@cognitivelint/rules':
+      '@dkoul/cognitivelint-rules':
         specifier: workspace:*
         version: link:../rules
       chalk:
@@ -65,7 +65,7 @@ importers:
 
   packages/config:
     dependencies:
-      '@cognitivelint/core':
+      '@dkoul/cognitivelint-core':
         specifier: workspace:*
         version: link:../core
       cosmiconfig:
@@ -76,7 +76,7 @@ importers:
 
   packages/formatters:
     dependencies:
-      '@cognitivelint/core':
+      '@dkoul/cognitivelint-core':
         specifier: workspace:*
         version: link:../core
       chalk:
@@ -85,7 +85,7 @@ importers:
 
   packages/parser-react:
     dependencies:
-      '@cognitivelint/core':
+      '@dkoul/cognitivelint-core':
         specifier: workspace:*
         version: link:../core
       '@typescript-eslint/parser':
@@ -100,22 +100,22 @@ importers:
 
   packages/rule-engine:
     dependencies:
-      '@cognitivelint/core':
+      '@dkoul/cognitivelint-core':
         specifier: workspace:*
         version: link:../core
-      '@cognitivelint/parser-react':
+      '@dkoul/cognitivelint-parser-react':
         specifier: workspace:*
         version: link:../parser-react
 
   packages/rules:
     dependencies:
-      '@cognitivelint/core':
+      '@dkoul/cognitivelint-core':
         specifier: workspace:*
         version: link:../core
-      '@cognitivelint/parser-react':
+      '@dkoul/cognitivelint-parser-react':
         specifier: workspace:*
         version: link:../parser-react
-      '@cognitivelint/rule-engine':
+      '@dkoul/cognitivelint-rule-engine':
         specifier: workspace:*
         version: link:../rule-engine
 

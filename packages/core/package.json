@@ -1,5 +1,5 @@
 {
-  "name": "@cognitivelint/core",
+  "name": "@dkoul/cognitivelint-core",
   "version": "0.1.0",
   "type": "module",
   "main": "./dist/index.js",

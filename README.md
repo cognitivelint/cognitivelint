@@ -8,10 +8,10 @@ CognitiveLint automatically detects cognitive friction in React applications bef
 
 ```bash
 # Install globally
-npm install -g @cognitivelint/cli
+npm install -g @dkoul/cognitivelint-cli
 
 # Or run directly with npx
-npx @cognitivelint/cli scan
+npx @dkoul/cognitivelint-cli scan
 
 # Scan your React project
 cd your-react-project
@@ -194,7 +194,7 @@ jobs:
         run: npm ci
       
       - name: Run CognitiveLint
-        run: npx @cognitivelint/cli scan -f sarif -o cognitive.sarif --min-score 70
+        run: npx @dkoul/cognitivelint-cli scan -f sarif -o cognitive.sarif --min-score 70
       
       - name: Upload SARIF
         uses: github/codeql-action/upload-sarif@v3
@@ -208,7 +208,7 @@ jobs:
 cognitivelint:
   stage: test
   script:
-    - npx @cognitivelint/cli scan --min-score 70 -f json -o cognitive-report.json
+    - npx @dkoul/cognitivelint-cli scan --min-score 70 -f json -o cognitive-report.json
   artifacts:
     reports:
       codequality: cognitive-report.json
@@ -247,14 +247,14 @@ node packages/cli/dist/index.js scan
 
 | Package | Description |
 |---------|-------------|
-| `@cognitivelint/cli` | Command-line interface |
-| `@cognitivelint/core` | Core types and scoring algorithm |
-| `@cognitivelint/config` | Configuration loading (cosmiconfig) |
-| `@cognitivelint/parser-react` | React/JSX AST parsing |
-| `@cognitivelint/rule-engine` | Rule execution with visitor pattern |
-| `@cognitivelint/rules` | 17 built-in cognitive UX rules |
-| `@cognitivelint/formatters` | Terminal, JSON, SARIF, HTML output |
-| `@cognitivelint/ai` | AI explanation layer (coming soon) |
+| `@dkoul/cognitivelint-cli` | Command-line interface |
+| `@dkoul/cognitivelint-core` | Core types and scoring algorithm |
+| `@dkoul/cognitivelint-config` | Configuration loading (cosmiconfig) |
+| `@dkoul/cognitivelint-parser-react` | React/JSX AST parsing |
+| `@dkoul/cognitivelint-rule-engine` | Rule execution with visitor pattern |
+| `@dkoul/cognitivelint-rules` | 17 built-in cognitive UX rules |
+| `@dkoul/cognitivelint-formatters` | Terminal, JSON, SARIF, HTML output |
+| `@dkoul/cognitivelint-ai` | AI explanation layer (coming soon) |
 
 ## Contributing
 

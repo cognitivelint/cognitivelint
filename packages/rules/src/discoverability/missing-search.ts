@@ -1,5 +1,5 @@
-import { createRule } from '@cognitivelint/rule-engine';
-import type { ReactComponent } from '@cognitivelint/parser-react';
+import { createRule } from '@dkoul/cognitivelint-rule-engine';
+import type { ReactComponent } from '@dkoul/cognitivelint-parser-react';
 
 interface Options {
   minItemsForSearch: number;

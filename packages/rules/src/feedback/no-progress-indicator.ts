@@ -1,5 +1,5 @@
-import { createRule } from '@cognitivelint/rule-engine';
-import type { ReactComponent } from '@cognitivelint/parser-react';
+import { createRule } from '@dkoul/cognitivelint-rule-engine';
+import type { ReactComponent } from '@dkoul/cognitivelint-parser-react';
 
 const STEP_PATTERNS = ['step', 'wizard', 'stepper', 'multistep', 'workflow'];
 const PROGRESS_PATTERNS = ['progress', 'indicator', 'breadcrumb', 'steps', 'stepper'];

@@ -1,5 +1,5 @@
-import { createRule } from '@cognitivelint/rule-engine';
-import type { ReactComponent, JSXElementInfo } from '@cognitivelint/parser-react';
+import { createRule } from '@dkoul/cognitivelint-rule-engine';
+import type { ReactComponent, JSXElementInfo } from '@dkoul/cognitivelint-parser-react';
 
 const DESTRUCTIVE_PATTERNS = [/delete/i, /remove/i, /destroy/i, /discard/i, /clear/i];
 const UNDO_PATTERNS = ['undo', 'revert', 'restore', 'cancel'];

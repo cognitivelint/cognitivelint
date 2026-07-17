@@ -1,5 +1,5 @@
-import { createRule } from '@cognitivelint/rule-engine';
-import type { JSXElementInfo } from '@cognitivelint/parser-react';
+import { createRule } from '@dkoul/cognitivelint-rule-engine';
+import type { JSXElementInfo } from '@dkoul/cognitivelint-parser-react';
 
 export const unexplainedDisabled = createRule({
   meta: {

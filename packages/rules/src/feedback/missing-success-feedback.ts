@@ -1,5 +1,5 @@
-import { createRule } from '@cognitivelint/rule-engine';
-import type { AsyncOperation } from '@cognitivelint/parser-react';
+import { createRule } from '@dkoul/cognitivelint-rule-engine';
+import type { AsyncOperation } from '@dkoul/cognitivelint-parser-react';
 
 export const missingSuccessFeedback = createRule({
   meta: {

@@ -1,5 +1,5 @@
 {
-  "name": "@cognitivelint/rules",
+  "name": "@dkoul/cognitivelint-rules",
   "version": "0.1.0",
   "type": "module",
   "main": "./dist/index.js",
@@ -19,8 +19,8 @@
     "clean": "rm -rf dist .turbo *.tsbuildinfo"
   },
   "dependencies": {
-    "@cognitivelint/core": "workspace:*",
-    "@cognitivelint/parser-react": "workspace:*",
-    "@cognitivelint/rule-engine": "workspace:*"
+    "@dkoul/cognitivelint-core": "workspace:*",
+    "@dkoul/cognitivelint-parser-react": "workspace:*",
+    "@dkoul/cognitivelint-rule-engine": "workspace:*"
   }
 }

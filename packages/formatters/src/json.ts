@@ -1,4 +1,4 @@
-import type { Report } from '@cognitivelint/core';
+import type { Report } from '@dkoul/cognitivelint-core';
 import type { Formatter, FormatterOptions } from './types.js';
 
 export const jsonFormatter: Formatter = {

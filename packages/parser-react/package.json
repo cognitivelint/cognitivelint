@@ -1,5 +1,5 @@
 {
-  "name": "@cognitivelint/parser-react",
+  "name": "@dkoul/cognitivelint-parser-react",
   "version": "0.1.0",
   "type": "module",
   "main": "./dist/index.js",
@@ -18,7 +18,7 @@
     "clean": "rm -rf dist .turbo *.tsbuildinfo"
   },
   "dependencies": {
-    "@cognitivelint/core": "workspace:*",
+    "@dkoul/cognitivelint-core": "workspace:*",
     "@typescript-eslint/parser": "^8.34.0",
     "@typescript-eslint/typescript-estree": "^8.34.0",
     "@typescript-eslint/types": "^8.34.0"

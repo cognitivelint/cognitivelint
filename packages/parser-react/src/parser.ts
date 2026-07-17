@@ -1,6 +1,6 @@
 import { parse } from '@typescript-eslint/parser';
 import { AST_NODE_TYPES, TSESTree } from '@typescript-eslint/typescript-estree';
-import type { SourceLocation } from '@cognitivelint/core';
+import type { SourceLocation } from '@dkoul/cognitivelint-core';
 import type {
   ReactComponent,
   JSXElementInfo,

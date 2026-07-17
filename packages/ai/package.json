@@ -1,5 +1,5 @@
 {
-  "name": "@cognitivelint/ai",
+  "name": "@dkoul/cognitivelint-ai",
   "version": "0.1.0",
   "type": "module",
   "main": "./dist/index.js",
@@ -18,7 +18,7 @@
     "clean": "rm -rf dist .turbo *.tsbuildinfo"
   },
   "dependencies": {
-    "@cognitivelint/core": "workspace:*",
+    "@dkoul/cognitivelint-core": "workspace:*",
     "@anthropic-ai/sdk": "^0.52.0"
   }
 }

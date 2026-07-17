@@ -1,5 +1,5 @@
 {
-  "name": "@cognitivelint/cli",
+  "name": "@dkoul/cognitivelint-cli",
   "version": "0.1.0",
   "description": "CLI for CognitiveLint - SonarQube for Cognitive UX",
   "keywords": ["cognitivelint", "ux", "react", "lint", "cognitive", "accessibility", "usability"],
@@ -25,12 +25,12 @@
     "clean": "rm -rf dist .turbo *.tsbuildinfo"
   },
   "dependencies": {
-    "@cognitivelint/core": "workspace:*",
-    "@cognitivelint/config": "workspace:*",
-    "@cognitivelint/parser-react": "workspace:*",
-    "@cognitivelint/rule-engine": "workspace:*",
-    "@cognitivelint/rules": "workspace:*",
-    "@cognitivelint/formatters": "workspace:*",
+    "@dkoul/cognitivelint-core": "workspace:*",
+    "@dkoul/cognitivelint-config": "workspace:*",
+    "@dkoul/cognitivelint-parser-react": "workspace:*",
+    "@dkoul/cognitivelint-rule-engine": "workspace:*",
+    "@dkoul/cognitivelint-rules": "workspace:*",
+    "@dkoul/cognitivelint-formatters": "workspace:*",
     "commander": "^13.1.0",
     "chalk": "^5.4.1",
     "ora": "^8.2.0",
