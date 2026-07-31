@@ -8,9 +8,9 @@ Rules that help users avoid mistakes and recover from errors.
 
 ### `error-prevention/destructive-no-confirm`
 
-**Severity**: Critical
+**Severity**: High
 
-Destructive actions (delete, remove, destroy) should require confirmation to prevent accidental data loss.
+Destructive actions (delete, remove, destroy, discard) should require confirmation to prevent accidental data loss. Reversible UI actions like Clear/Reset are not flagged.
 
 #### Bad
 ```jsx
@@ -31,9 +31,9 @@ Destructive actions (delete, remove, destroy) should require confirmation to pre
 
 ### `error-prevention/no-undo`
 
-**Severity**: High
+**Severity**: Low
 
-Destructive actions should provide an undo capability when possible.
+Destructive actions should provide an undo capability when possible. Actions that already require confirmation are not also flagged for missing undo.
 
 #### Bad
 ```jsx
@@ -52,9 +52,21 @@ Destructive actions should provide an undo capability when possible.
 
 ### `error-prevention/modal-nesting`
 
-**Severity**: High
+**Severity**: High  
+**Default**: Off
 
 Modals should not be nested inside other modals. Nested modals confuse users about context and navigation.
+
+This rule is **disabled by default** because UI component libraries (Radix UI, Headless UI, PatternFly) often produce false positives. Enable it when you want nesting checks:
+
+```javascript
+// cognitivelint.config.js
+export default {
+  rules: {
+    'error-prevention/modal-nesting': { severity: 'high' },
+  },
+};
+```
 
 #### Bad
 ```jsx
@@ -72,31 +84,21 @@ Modals should not be nested inside other modals. Nested modals confuse users abo
 </Modal>
 ```
 
-**Note**: This rule may produce false positives with UI component libraries like Radix UI, Headless UI, or PatternFly. Disable it in your config if needed:
-
-```javascript
-// cognitivelint.config.js
-export default {
-  rules: {
-    'error-prevention/modal-nesting': 'off',
-  },
-};
-```
-
 ---
 
 ### `error-prevention/confirmation-fatigue`
 
 **Severity**: Medium  
-**Default threshold**: 2 confirmations per component
+**Default threshold**: 3 confirmations per component
 
-Too many confirmation dialogs train users to click through without reading, defeating their purpose.
+Too many confirmation dialogs train users to click through without reading, defeating their purpose. Form `onConfirm` handlers are not counted.
 
 #### Bad
 ```jsx
 <ConfirmDialog action="save" />
 <ConfirmDialog action="update" />
 <ConfirmDialog action="publish" />
+<ConfirmDialog action="archive" />
 ```
 
 #### Good
@@ -106,7 +108,7 @@ Reserve confirmations for truly destructive or irreversible actions only.
 ```javascript
 {
   'error-prevention/confirmation-fatigue': {
-    options: { maxConfirmations: 3 }
+    options: { maxConfirmations: 2 }
   }
 }
 ```

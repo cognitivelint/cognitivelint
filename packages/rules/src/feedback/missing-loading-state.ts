@@ -7,7 +7,7 @@ export const missingLoadingState = createRule({
     name: 'Missing Loading State',
     description: 'User-triggered async operations should display loading feedback',
     category: 'feedback',
-    severity: 'high',
+    severity: 'medium',
     principle: 'System Status Visibility (Nielsen Heuristic #1)',
     docs: 'https://cognitivelint.dev/rules/feedback/missing-loading-state',
   },
@@ -29,10 +29,11 @@ export const missingLoadingState = createRule({
       },
 
       AsyncOperation(op: AsyncOperation) {
+        // Only flag user-triggered fetches; background/data-loading hooks are noisier
         if (op.type === 'fetch' && !op.hasLoadingState && hasInteractiveElement) {
           context.report({
-            severity: 'high',
-            confidence: 75,
+            severity: 'medium',
+            confidence: 60,
             message: `Async fetch operation lacks loading feedback. Users cannot tell if the action is in progress.`,
             location: op.location,
             context: {

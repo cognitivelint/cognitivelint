@@ -1,14 +1,13 @@
 import { createRule } from '@cognitivelint/rule-engine';
 import type { JSXElementInfo } from '@cognitivelint/parser-react';
 
+// Only strong irreversible signals — clear/reset often mean reversible UI state
 const DESTRUCTIVE_PATTERNS = [
   /delete/i,
-  /remove/i,
   /destroy/i,
   /erase/i,
+  /\bremove\b/i,
   /discard/i,
-  /clear/i,
-  /reset/i,
 ];
 
 const CONFIRM_PATTERNS = [
@@ -24,9 +23,15 @@ function isDestructiveAction(element: JSXElementInfo): boolean {
   const onClick = element.attributes.find((a) => a.name === 'onClick');
   const onClickValue = typeof onClick?.value === 'string' ? onClick.value : '';
 
-  return DESTRUCTIVE_PATTERNS.some(
-    (pattern) => pattern.test(textContent) || pattern.test(onClickValue)
+  // Require destructive language in the visible label, or a clearly named handler
+  const labelIsDestructive = DESTRUCTIVE_PATTERNS.some((pattern) =>
+    pattern.test(textContent)
   );
+  const handlerIsDestructive = DESTRUCTIVE_PATTERNS.some((pattern) =>
+    pattern.test(onClickValue)
+  );
+
+  return labelIsDestructive || handlerIsDestructive;
 }
 
 function hasConfirmationPattern(element: JSXElementInfo): boolean {
@@ -37,12 +42,17 @@ function hasConfirmationPattern(element: JSXElementInfo): boolean {
     return true;
   }
 
-  if (onClickValue.includes('confirm') || onClickValue.includes('modal') ||
-      onClickValue.includes('dialog') || onClickValue.includes('prompt')) {
-    return true;
-  }
+  // Common design-system affordances for confirmations
+  const hasConfirmProp = element.attributes.some((attr) => {
+    const nameLower = attr.name.toLowerCase();
+    return (
+      nameLower.includes('confirm') ||
+      nameLower === 'requireconfirmation' ||
+      nameLower === 'withconfirmation'
+    );
+  });
 
-  return false;
+  return hasConfirmProp;
 }
 
 export const destructiveNoConfirm = createRule({
@@ -51,7 +61,7 @@ export const destructiveNoConfirm = createRule({
     name: 'Destructive Action Without Confirmation',
     description: 'Destructive actions should require confirmation to prevent accidents',
     category: 'error-prevention',
-    severity: 'critical',
+    severity: 'high',
     principle: 'Error Prevention (Nielsen Heuristic #5)',
     docs: 'https://cognitivelint.dev/rules/error-prevention/destructive-no-confirm',
   },
@@ -63,8 +73,8 @@ export const destructiveNoConfirm = createRule({
         if (hasConfirmationPattern(element)) return;
 
         context.report({
-          severity: 'critical',
-          confidence: 80,
+          severity: 'high',
+          confidence: 70,
           message:
             'Destructive action lacks confirmation. Users may accidentally delete important data.',
           location: element.location,

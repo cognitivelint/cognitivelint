@@ -16,10 +16,20 @@ function isConfirmationElement(element: JSXElementInfo): boolean {
     (attr) => attr.name === 'role' && attr.value === 'alertdialog'
   );
 
-  const hasConfirmAction = element.attributes.some((attr) => {
-    const nameLower = attr.name.toLowerCase();
-    return nameLower.includes('confirm') || nameLower.includes('onconfirm');
-  });
+  // Only count dedicated confirm handler props on dialog-like components,
+  // not every element that happens to have an onConfirm callback (e.g. forms).
+  const looksLikeDialog =
+    tagLower.includes('dialog') ||
+    tagLower.includes('modal') ||
+    tagLower.includes('confirm') ||
+    tagLower.includes('alert');
+
+  const hasConfirmAction =
+    looksLikeDialog &&
+    element.attributes.some((attr) => {
+      const nameLower = attr.name.toLowerCase();
+      return nameLower === 'onconfirm' || nameLower === 'onconfirmation';
+    });
 
   return isConfirmComponent || hasConfirmRole || hasConfirmAction;
 }
@@ -40,12 +50,12 @@ export const confirmationFatigue = createRule<Options>({
     schema: {
       type: 'object',
       properties: {
-        maxConfirmations: { type: 'number', default: 2 },
+        maxConfirmations: { type: 'number', default: 3 },
       },
     },
   },
   defaultOptions: {
-    maxConfirmations: 2,
+    maxConfirmations: 3,
   },
   create(context) {
     return {
@@ -58,7 +68,7 @@ export const confirmationFatigue = createRule<Options>({
           if (firstConfirm) {
             context.report({
               severity: 'medium',
-              confidence: 75,
+              confidence: 65,
               message: `${confirmCount} confirmation dialogs detected. Users become desensitized to warnings.`,
               location: firstConfirm.location,
               context: {

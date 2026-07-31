@@ -185,7 +185,7 @@ export default {
     // Configure options
     'cognitive-load/excessive-primary-actions': {
       severity: 'high',
-      options: { maxPrimaryActions: 3 },
+      options: { maxPrimaryActions: 2 },
     },
   },
   
@@ -195,14 +195,14 @@ export default {
 };
 ```
 
-### Disabling Rules for UI Libraries
+### Enabling Modal Nesting
 
-If you're using Radix UI, Headless UI, or PatternFly, disable the `modal-nesting` rule which can produce false positives on component library patterns:
+`error-prevention/modal-nesting` is off by default to avoid false positives with Radix UI, Headless UI, and PatternFly. Enable it when needed:
 
 ```javascript
 export default {
   rules: {
-    'error-prevention/modal-nesting': 'off',
+    'error-prevention/modal-nesting': { severity: 'high' },
   },
 };
 ```

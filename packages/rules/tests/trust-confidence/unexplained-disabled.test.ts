@@ -45,11 +45,29 @@ describe('trust-confidence/unexplained-disabled', () => {
     expect(findings.length).toBe(0);
   });
 
+  it('should not flag disabled button with helperText', () => {
+    const code = wrapInComponent(`
+      <Button disabled helperText="Complete required fields first">
+        Save
+      </Button>
+    `);
+    const findings = runRule(unexplainedDisabled, code);
+    expect(findings.length).toBe(0);
+  });
+
   it('should not flag enabled button', () => {
     const code = wrapInComponent(`
       <button onClick={() => {}}>Save</button>
     `);
     const findings = runRule(unexplainedDisabled, code);
     expect(findings.length).toBe(0);
+  });
+
+  it('should report low severity for unexplained disabled buttons', () => {
+    const code = wrapInComponent(`
+      <button disabled onClick={() => {}}>Save</button>
+    `);
+    const findings = runRule(unexplainedDisabled, code);
+    expect(findings[0].severity).toBe('low');
   });
 });

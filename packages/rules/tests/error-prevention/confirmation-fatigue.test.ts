@@ -9,6 +9,7 @@ describe('error-prevention/confirmation-fatigue', () => {
         <ConfirmDialog action="save" />
         <ConfirmDialog action="edit" />
         <ConfirmDialog action="update" />
+        <ConfirmDialog action="publish" />
       </div>
     `);
     const findings = runRule(confirmationFatigue, code);
@@ -22,6 +23,7 @@ describe('error-prevention/confirmation-fatigue', () => {
         <AlertDialog role="alertdialog" id="1" />
         <AlertDialog role="alertdialog" id="2" />
         <AlertDialog role="alertdialog" id="3" />
+        <AlertDialog role="alertdialog" id="4" />
       </div>
     `);
     const findings = runRule(confirmationFatigue, code);
@@ -38,11 +40,25 @@ describe('error-prevention/confirmation-fatigue', () => {
     expect(findings.length).toBe(0);
   });
 
-  it('should not flag two confirmations (within limit)', () => {
+  it('should not flag three confirmations (within limit)', () => {
     const code = wrapInComponent(`
       <div>
         <ConfirmDialog action="delete" />
-        <ConfirmDialog action="reset" />
+        <ConfirmDialog action="archive" />
+        <ConfirmDialog action="transfer" />
+      </div>
+    `);
+    const findings = runRule(confirmationFatigue, code);
+    expect(findings.length).toBe(0);
+  });
+
+  it('should not count form onConfirm handlers as confirmation dialogs', () => {
+    const code = wrapInComponent(`
+      <div>
+        <SignupForm onConfirm={handleSignup} />
+        <ProfileForm onConfirm={handleProfile} />
+        <SettingsForm onConfirm={handleSettings} />
+        <BillingForm onConfirm={handleBilling} />
       </div>
     `);
     const findings = runRule(confirmationFatigue, code);

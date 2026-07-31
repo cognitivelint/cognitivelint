@@ -6,17 +6,45 @@ interface Options {
 }
 
 const INPUT_TAGS = ['input', 'textarea', 'select'];
-const FIELDSET_PATTERNS = ['fieldset', 'formgroup', 'formsection', 'formfield'];
+const INPUT_COMPONENT_PATTERNS = [
+  'textinput',
+  'textfield',
+  'textarea',
+  'select',
+  'combobox',
+  'datepicker',
+  'timepicker',
+  'checkbox',
+  'radiogroup',
+  'switch',
+  'slider',
+  'autocomplete',
+];
+const FIELD_WRAPPER_PATTERNS = [
+  'fieldset',
+  'formgroup',
+  'formsection',
+  'formfield',
+  'fieldgroup',
+  'formrow',
+  'formitem',
+  'formcontrol',
+];
+// Grouping containers that organize multiple fields — not single-field wrappers
+const FIELDSET_PATTERNS = ['fieldset', 'formgroup', 'formsection', 'fieldgroup'];
 
 function isInputElement(element: JSXElementInfo): boolean {
   const tagLower = element.tagName.toLowerCase();
+
+  // Skip layout/wrapper components that often wrap real inputs
+  if (FIELD_WRAPPER_PATTERNS.some((p) => tagLower.includes(p))) {
+    return false;
+  }
+
   return (
     INPUT_TAGS.includes(tagLower) ||
-    tagLower.includes('input') ||
-    tagLower.includes('field') ||
-    tagLower.includes('select') ||
-    tagLower.includes('picker') ||
-    tagLower.includes('dropdown')
+    tagLower.endsWith('input') ||
+    INPUT_COMPONENT_PATTERNS.some((p) => tagLower.includes(p))
   );
 }
 
@@ -39,12 +67,12 @@ export const longForms = createRule<Options>({
     schema: {
       type: 'object',
       properties: {
-        maxFields: { type: 'number', default: 8 },
+        maxFields: { type: 'number', default: 12 },
       },
     },
   },
   defaultOptions: {
-    maxFields: 8,
+    maxFields: 12,
   },
   create(context) {
     let formElement: JSXElementInfo | null = null;
@@ -72,8 +100,8 @@ export const longForms = createRule<Options>({
         const max = context.options.maxFields;
         if (formElement && inputCount > max && !hasFieldGrouping(component)) {
           context.report({
-            severity: inputCount > 12 ? 'high' : 'medium',
-            confidence: 85,
+            severity: inputCount > 18 ? 'high' : 'medium',
+            confidence: 75,
             message: `Form has ${inputCount} fields without grouping. Users face cognitive overload.`,
             location: formElement.location,
             context: {

@@ -6,9 +6,27 @@ interface Options {
 }
 
 const FILTER_PATTERNS = ['filter', 'facet', 'refinement', 'criteria'];
+const FILTER_CONTAINER_PATTERNS = [
+  'filterbar',
+  'filterpanel',
+  'filtercontainer',
+  'filtersidebar',
+  'filtergroup',
+  'filterdrawer',
+  'filterwrapper',
+  'filterlist',
+  'morefilter',
+  'filtertoolbar',
+  'filtersection',
+];
 
 function isFilterElement(element: JSXElementInfo): boolean {
   const tagLower = element.tagName.toLowerCase();
+
+  // Skip layout containers so a FilterBar wrapping 3 filters isn't counted as 4
+  if (FILTER_CONTAINER_PATTERNS.some((p) => tagLower.includes(p))) {
+    return false;
+  }
 
   const hasFilterInName = FILTER_PATTERNS.some((p) => tagLower.includes(p));
 
@@ -37,12 +55,12 @@ export const filterOverload = createRule<Options>({
     schema: {
       type: 'object',
       properties: {
-        maxFilters: { type: 'number', default: 8 },
+        maxFilters: { type: 'number', default: 10 },
       },
     },
   },
   defaultOptions: {
-    maxFilters: 8,
+    maxFilters: 10,
   },
   create(context) {
     return {
@@ -54,8 +72,8 @@ export const filterOverload = createRule<Options>({
           const firstFilter = component.jsxElements.find(isFilterElement);
           if (firstFilter) {
             context.report({
-              severity: filterCount > 12 ? 'high' : 'medium',
-              confidence: 80,
+              severity: filterCount > 15 ? 'high' : 'medium',
+              confidence: 70,
               message: `${filterCount} filters visible. Users face decision fatigue.`,
               location: firstFilter.location,
               context: {

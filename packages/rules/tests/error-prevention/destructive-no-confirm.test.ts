@@ -10,7 +10,7 @@ describe('error-prevention/destructive-no-confirm', () => {
     const findings = runRule(destructiveNoConfirm, code);
     expect(findings.length).toBe(1);
     expect(findings[0].ruleId).toBe('error-prevention/destructive-no-confirm');
-    expect(findings[0].severity).toBe('critical');
+    expect(findings[0].severity).toBe('high');
   });
 
   it('should flag remove action without confirmation', () => {
@@ -19,6 +19,17 @@ describe('error-prevention/destructive-no-confirm', () => {
     `);
     const findings = runRule(destructiveNoConfirm, code);
     expect(findings.length).toBe(1);
+  });
+
+  it('should not flag clear/reset as destructive', () => {
+    const code = wrapInComponent(`
+      <div>
+        <button onClick={clearFilters}>Clear</button>
+        <button onClick={resetForm}>Reset</button>
+      </div>
+    `);
+    const findings = runRule(destructiveNoConfirm, code);
+    expect(findings.length).toBe(0);
   });
 
   it('should not flag delete with confirmation handler', () => {
