@@ -39,12 +39,12 @@ export const denseTables = createRule<Options>({
     schema: {
       type: 'object',
       properties: {
-        maxColumns: { type: 'number', default: 12 },
+        maxColumns: { type: 'number', default: 15 },
       },
     },
   },
   defaultOptions: {
-    maxColumns: 12,
+    maxColumns: 15,
   },
   create(context) {
     return {
@@ -65,8 +65,8 @@ export const denseTables = createRule<Options>({
 
           if (tableElement) {
             context.report({
-              severity: columnCount > 15 ? 'high' : 'medium',
-              confidence: 90,
+              severity: columnCount > 20 ? 'high' : 'medium',
+              confidence: 80,
               message: `Table has ${columnCount} columns. Users struggle to scan dense data.`,
               location: tableElement.location,
               context: {

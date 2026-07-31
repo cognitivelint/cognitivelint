@@ -10,7 +10,7 @@ Rules that ensure users receive appropriate feedback about system status.
 
 ### `feedback/missing-loading-state`
 
-**Severity**: High
+**Severity**: Medium
 
 User-triggered async operations should display loading feedback so users know their action is being processed.
 

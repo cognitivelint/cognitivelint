@@ -10,6 +10,7 @@ describe('error-prevention/no-undo', () => {
     const findings = runRule(noUndo, code);
     expect(findings.length).toBe(1);
     expect(findings[0].ruleId).toBe('error-prevention/no-undo');
+    expect(findings[0].severity).toBe('low');
   });
 
   it('should not flag when undo button exists', () => {
@@ -29,6 +30,14 @@ describe('error-prevention/no-undo', () => {
         <button onClick={() => deleteItem(id)}>Delete</button>
         <button onClick={restoreItem}>Restore</button>
       </div>
+    `);
+    const findings = runRule(noUndo, code);
+    expect(findings.length).toBe(0);
+  });
+
+  it('should not flag destructive action that already requires confirmation', () => {
+    const code = wrapInComponent(`
+      <button onClick={openDeleteConfirmModal}>Delete</button>
     `);
     const findings = runRule(noUndo, code);
     expect(findings.length).toBe(0);

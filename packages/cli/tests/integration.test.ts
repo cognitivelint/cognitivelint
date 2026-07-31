@@ -48,26 +48,29 @@ export function ComprehensiveTestComponent() {
         <input name="f1" /><input name="f2" /><input name="f3" />
         <input name="f4" /><input name="f5" /><input name="f6" />
         <input name="f7" /><input name="f8" /><input name="f9" />
-        <input name="f10" />
+        <input name="f10" /><input name="f11" /><input name="f12" />
+        <input name="f13" />
       </form>
 
-      {/* Rule: cognitive-load/excessive-primary-actions - 3 primary buttons */}
+      {/* Rule: cognitive-load/excessive-primary-actions - 4 primary buttons */}
       <button className="btn-primary">Action 1</button>
       <button variant="primary">Action 2</button>
       <button type="primary">Action 3</button>
+      <button intent="primary">Action 4</button>
 
-      {/* Rule: cognitive-load/dense-tables - 13 columns */}
+      {/* Rule: cognitive-load/dense-tables - 16 columns */}
       <table>
         <thead>
           <tr>
             <th>1</th><th>2</th><th>3</th><th>4</th><th>5</th>
             <th>6</th><th>7</th><th>8</th><th>9</th><th>10</th>
-            <th>11</th><th>12</th><th>13</th>
+            <th>11</th><th>12</th><th>13</th><th>14</th><th>15</th>
+            <th>16</th>
           </tr>
         </thead>
       </table>
 
-      {/* Rule: cognitive-load/filter-overload - 9 filters */}
+      {/* Rule: cognitive-load/filter-overload - 11 filters */}
       <FilterSelect name="f1" />
       <FilterSelect name="f2" />
       <FilterSelect name="f3" />
@@ -77,19 +80,22 @@ export function ComprehensiveTestComponent() {
       <FilterSelect name="f7" />
       <FilterSelect name="f8" />
       <FilterSelect name="f9" />
+      <FilterSelect name="f10" />
+      <FilterSelect name="f11" />
 
       {/* Rule: trust-confidence/unexplained-disabled */}
       <button disabled onClick={() => {}}>Disabled</button>
 
-      {/* Rule: error-prevention/modal-nesting */}
+      {/* Rule: error-prevention/modal-nesting (off by default; enable to test) */}
       <Modal isOpen={true}>
         <Modal isOpen={innerOpen}>Nested</Modal>
       </Modal>
 
-      {/* Rule: error-prevention/confirmation-fatigue - 3 confirms */}
+      {/* Rule: error-prevention/confirmation-fatigue - 4 confirms */}
       <ConfirmDialog action="a" />
       <ConfirmDialog action="b" />
       <ConfirmDialog action="c" />
+      <ConfirmDialog action="d" />
 
       {/* Rule: discoverability/empty-navigation */}
       <nav>

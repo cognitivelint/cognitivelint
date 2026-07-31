@@ -3,12 +3,13 @@ import { excessivePrimaryActions } from '../../src/cognitive-load/excessive-prim
 import { runRule, wrapInComponent } from '../test-utils.js';
 
 describe('cognitive-load/excessive-primary-actions', () => {
-  it('should flag more than 2 primary buttons', () => {
+  it('should flag more than 3 primary buttons', () => {
     const code = wrapInComponent(`
       <div>
         <button className="btn-primary">Action 1</button>
         <button variant="primary">Action 2</button>
         <button type="primary">Action 3</button>
+        <button intent="primary">Action 4</button>
       </div>
     `);
     const findings = runRule(excessivePrimaryActions, code);
@@ -16,11 +17,12 @@ describe('cognitive-load/excessive-primary-actions', () => {
     expect(findings[0].ruleId).toBe('cognitive-load/excessive-primary-actions');
   });
 
-  it('should not flag 2 primary buttons', () => {
+  it('should not flag 3 primary buttons', () => {
     const code = wrapInComponent(`
       <div>
         <button className="btn-primary">Save</button>
         <button variant="primary">Submit</button>
+        <button type="primary">Publish</button>
       </div>
     `);
     const findings = runRule(excessivePrimaryActions, code);
@@ -38,17 +40,31 @@ describe('cognitive-load/excessive-primary-actions', () => {
     expect(findings.length).toBe(0);
   });
 
-  it('should flag with higher severity for 4+ primary buttons', () => {
+  it('should flag with higher severity for 6+ primary buttons', () => {
     const code = wrapInComponent(`
       <div>
         <button className="btn-primary">A</button>
         <button variant="primary">B</button>
         <button type="primary">C</button>
         <button intent="primary">D</button>
+        <button appearance="primary">E</button>
+        <button className="primary">F</button>
       </div>
     `);
     const findings = runRule(excessivePrimaryActions, code);
     expect(findings.length).toBe(1);
     expect(findings[0].severity).toBe('high');
+  });
+
+  it('should not flag Clear/Reset as primary unless styled primary', () => {
+    const code = wrapInComponent(`
+      <div>
+        <button className="btn-primary">Save</button>
+        <button>Clear</button>
+        <button>Reset</button>
+      </div>
+    `);
+    const findings = runRule(excessivePrimaryActions, code);
+    expect(findings.length).toBe(0);
   });
 });

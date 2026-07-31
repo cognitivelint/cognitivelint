@@ -45,7 +45,10 @@ export const DEFAULT_CONFIG: Config = {
     '**/@radix-ui/**',
     '**/@headlessui/**',
   ],
-  rules: {},
+  rules: {
+    // Known false-positive source with Radix/Headless UI / PatternFly primitives
+    'error-prevention/modal-nesting': 'off',
+  },
   weights: DEFAULT_WEIGHTS,
   format: 'terminal',
   aiExplanations: false,

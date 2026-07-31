@@ -1,8 +1,10 @@
 import { createRule } from '@cognitivelint/rule-engine';
 import type { ReactComponent, JSXElementInfo } from '@cognitivelint/parser-react';
 
-const DESTRUCTIVE_PATTERNS = [/delete/i, /remove/i, /destroy/i, /discard/i, /clear/i];
+// Align with destructive-no-confirm: skip reversible UI actions like clear/reset
+const DESTRUCTIVE_PATTERNS = [/delete/i, /destroy/i, /\bremove\b/i, /discard/i];
 const UNDO_PATTERNS = ['undo', 'revert', 'restore', 'cancel'];
+const CONFIRM_PATTERNS = [/confirm/i, /dialog/i, /modal/i, /prompt/i, /alert/i];
 
 function isDestructiveAction(element: JSXElementInfo): boolean {
   const textContent = element.textContent?.toLowerCase() ?? '';
@@ -12,6 +14,24 @@ function isDestructiveAction(element: JSXElementInfo): boolean {
   return DESTRUCTIVE_PATTERNS.some(
     (pattern) => pattern.test(textContent) || pattern.test(onClickValue)
   );
+}
+
+function hasConfirmationPattern(element: JSXElementInfo): boolean {
+  const onClick = element.attributes.find((a) => a.name === 'onClick');
+  const onClickValue = typeof onClick?.value === 'string' ? onClick.value.toLowerCase() : '';
+
+  if (CONFIRM_PATTERNS.some((pattern) => pattern.test(onClickValue))) {
+    return true;
+  }
+
+  return element.attributes.some((attr) => {
+    const nameLower = attr.name.toLowerCase();
+    return (
+      nameLower.includes('confirm') ||
+      nameLower === 'requireconfirmation' ||
+      nameLower === 'withconfirmation'
+    );
+  });
 }
 
 function hasUndoCapability(component: ReactComponent): boolean {
@@ -28,7 +48,7 @@ export const noUndo = createRule({
     name: 'No Undo Capability',
     description: 'Destructive actions should be reversible or have undo capability',
     category: 'error-prevention',
-    severity: 'medium',
+    severity: 'low',
     principle: 'User Control and Freedom (Nielsen Heuristic #3)',
     docs: 'https://cognitivelint.dev/rules/error-prevention/no-undo',
   },
@@ -42,7 +62,8 @@ export const noUndo = createRule({
       },
 
       Button(element: JSXElementInfo) {
-        if (isDestructiveAction(element)) {
+        // Confirmation is an accepted alternative to undo for irreversible actions
+        if (isDestructiveAction(element) && !hasConfirmationPattern(element)) {
           destructiveActions.push(element);
         }
       },
@@ -51,8 +72,8 @@ export const noUndo = createRule({
         if (destructiveActions.length > 0 && !hasUndoCapability(component)) {
           for (const action of destructiveActions) {
             context.report({
-              severity: 'medium',
-              confidence: 70,
+              severity: 'low',
+              confidence: 55,
               message: 'Destructive action has no undo capability. Users cannot recover from mistakes.',
               location: action.location,
               context: {

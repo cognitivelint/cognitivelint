@@ -8,9 +8,9 @@ Rules that help users understand what will happen and who owns what.
 
 ### `trust-confidence/unexplained-disabled`
 
-**Severity**: Medium
+**Severity**: Low
 
-Disabled buttons should have explanatory tooltips so users understand why the action is unavailable and what they need to do to enable it.
+Disabled buttons should have explanatory tooltips so users understand why the action is unavailable and what they need to do to enable it. Common design-system props (`tooltip`, `helperText`, `disabledReason`) are recognized.
 
 #### Bad
 ```jsx

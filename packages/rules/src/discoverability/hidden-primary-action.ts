@@ -47,7 +47,7 @@ export const hiddenPrimaryAction = createRule({
     name: 'Hidden Primary Action',
     description: 'Primary actions should be visible without scrolling',
     category: 'discoverability',
-    severity: 'high',
+    severity: 'medium',
     principle: 'Visibility of System Status - Key actions should be prominent',
     docs: 'https://cognitivelint.dev/rules/discoverability/hidden-primary-action',
   },
@@ -62,8 +62,8 @@ export const hiddenPrimaryAction = createRule({
         for (const action of primaryActions) {
           if (isInsideScrollableContainer(action, component)) {
             context.report({
-              severity: 'medium',
-              confidence: 60,
+            severity: 'medium',
+            confidence: 50,
               message: 'Primary action is inside scrollable container. Users may need to scroll to find it.',
               location: action.location,
               context: {

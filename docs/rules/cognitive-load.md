@@ -11,7 +11,7 @@ Rules that reduce mental effort required to use the interface.
 ### `cognitive-load/excessive-primary-actions`
 
 **Severity**: Medium  
-**Default threshold**: 2 primary actions
+**Default threshold**: 3 primary actions
 
 Too many primary buttons compete for attention and make it unclear which action is most important.
 
@@ -21,6 +21,7 @@ Too many primary buttons compete for attention and make it unclear which action 
   <button className="btn-primary">Save</button>
   <button variant="primary">Submit</button>
   <button type="primary">Publish</button>
+  <button intent="primary">Share</button>
 </div>
 ```
 
@@ -37,7 +38,7 @@ Too many primary buttons compete for attention and make it unclear which action 
 ```javascript
 {
   'cognitive-load/excessive-primary-actions': {
-    options: { maxPrimaryActions: 3 }
+    options: { maxPrimaryActions: 2 }
   }
 }
 ```
@@ -47,7 +48,7 @@ Too many primary buttons compete for attention and make it unclear which action 
 ### `cognitive-load/long-forms`
 
 **Severity**: Medium  
-**Default threshold**: 8 fields
+**Default threshold**: 12 fields
 
 Forms with many fields should be grouped or split into steps to reduce cognitive overload.
 
@@ -64,6 +65,9 @@ Forms with many fields should be grouped or split into steps to reduce cognitive
   <input name="state" />
   <input name="zip" />
   <input name="country" />
+  <input name="company" />
+  <input name="title" />
+  <input name="notes" />
 </form>
 ```
 
@@ -103,9 +107,9 @@ Forms with many fields should be grouped or split into steps to reduce cognitive
 ### `cognitive-load/filter-overload`
 
 **Severity**: Medium  
-**Default threshold**: 7 filters
+**Default threshold**: 10 filters
 
-Too many filter options overwhelm users. Consider progressive disclosure or saved filter presets.
+Too many filter options overwhelm users. Consider progressive disclosure or saved filter presets. Filter layout containers (e.g. `FilterBar`) are not counted.
 
 #### Bad
 ```jsx
@@ -119,6 +123,8 @@ Too many filter options overwhelm users. Consider progressive disclosure or save
   <Filter name="project" />
   <Filter name="team" />
   <Filter name="milestone" />
+  <Filter name="label" />
+  <Filter name="severity" />
 </FilterBar>
 ```
 
@@ -141,7 +147,7 @@ Too many filter options overwhelm users. Consider progressive disclosure or save
 ### `cognitive-load/dense-tables`
 
 **Severity**: Medium  
-**Default threshold**: 10 columns
+**Default threshold**: 15 columns
 
 Tables with too many columns are hard to scan. Consider hiding less important columns or using expandable rows.
 
@@ -153,6 +159,7 @@ Tables with too many columns are hard to scan. Consider hiding less important co
       <th>ID</th><th>Name</th><th>Email</th><th>Phone</th>
       <th>Address</th><th>City</th><th>State</th><th>Zip</th>
       <th>Country</th><th>Created</th><th>Updated</th><th>Status</th>
+      <th>Owner</th><th>Team</th><th>Priority</th><th>Tags</th>
     </tr>
   </thead>
 </table>

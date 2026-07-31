@@ -31,12 +31,12 @@ export const excessivePrimaryActions = createRule<Options>({
     schema: {
       type: 'object',
       properties: {
-        maxPrimaryActions: { type: 'number', default: 2 },
+        maxPrimaryActions: { type: 'number', default: 3 },
       },
     },
   },
   defaultOptions: {
-    maxPrimaryActions: 2,
+    maxPrimaryActions: 3,
   },
   create(context) {
     let primaryButtons: JSXElementInfo[] = [];
@@ -55,10 +55,10 @@ export const excessivePrimaryActions = createRule<Options>({
       'Component:exit'(_component: ReactComponent) {
         const max = context.options.maxPrimaryActions;
         if (primaryButtons.length > max) {
-          const severity = primaryButtons.length > 3 ? 'high' : 'medium';
+          const severity = primaryButtons.length > 5 ? 'high' : 'medium';
           context.report({
             severity,
-            confidence: 95,
+            confidence: 85,
             message: `${primaryButtons.length} primary actions detected. Users struggle to identify the main action.`,
             location: primaryButtons[0].location,
             context: {

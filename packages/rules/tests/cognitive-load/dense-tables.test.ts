@@ -3,24 +3,13 @@ import { denseTables } from '../../src/cognitive-load/dense-tables.js';
 import { runRule, wrapInComponent } from '../test-utils.js';
 
 describe('cognitive-load/dense-tables', () => {
-  it('should flag table with more than 12 columns', () => {
+  it('should flag table with more than 15 columns', () => {
+    const cols = Array.from({ length: 16 }, (_, i) => `<th>Col ${i + 1}</th>`).join('\n            ');
     const code = wrapInComponent(`
       <table>
         <thead>
           <tr>
-            <th>Col 1</th>
-            <th>Col 2</th>
-            <th>Col 3</th>
-            <th>Col 4</th>
-            <th>Col 5</th>
-            <th>Col 6</th>
-            <th>Col 7</th>
-            <th>Col 8</th>
-            <th>Col 9</th>
-            <th>Col 10</th>
-            <th>Col 11</th>
-            <th>Col 12</th>
-            <th>Col 13</th>
+            ${cols}
           </tr>
         </thead>
       </table>
@@ -30,16 +19,13 @@ describe('cognitive-load/dense-tables', () => {
     expect(findings[0].ruleId).toBe('cognitive-load/dense-tables');
   });
 
-  it('should not flag table with 12 or fewer columns', () => {
+  it('should not flag table with 15 or fewer columns', () => {
+    const cols = Array.from({ length: 12 }, (_, i) => `<th>Col ${i + 1}</th>`).join('\n            ');
     const code = wrapInComponent(`
       <table>
         <thead>
           <tr>
-            <th>Col 1</th>
-            <th>Col 2</th>
-            <th>Col 3</th>
-            <th>Col 4</th>
-            <th>Col 5</th>
+            ${cols}
           </tr>
         </thead>
       </table>
