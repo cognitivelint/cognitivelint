@@ -7,14 +7,21 @@ import {
   type ServerOptions,
   TransportKind,
 } from 'vscode-languageclient/node';
+import { completeWithEditorLm } from './editorLm';
+import { registerPersonaSubagents } from './personas';
 
 let client: LanguageClient | undefined;
+
+const EDITOR_LM_REQUEST = 'cognitivelint/editorLm/complete';
 
 export async function activate(context: vscode.ExtensionContext): Promise<void> {
   const enable = vscode.workspace.getConfiguration('cognitivelint.a11y').get<boolean>('enable', true);
   if (!enable) {
     return;
   }
+
+  // Persona subagents in Chat — backed by Copilot / Cursor built-in models
+  registerPersonaSubagents(context);
 
   const serverModule = resolveServerModule(context);
 
@@ -56,10 +63,18 @@ export async function activate(context: vscode.ExtensionContext): Promise<void> 
     clientOptions,
   );
 
+  // Language server asks the extension to complete prompts via vscode.lm
+  client.onRequest(
+    EDITOR_LM_REQUEST,
+    async (params: { prompt: string }, token: vscode.CancellationToken) => {
+      return completeWithEditorLm(params.prompt, token);
+    },
+  );
+
   context.subscriptions.push(
     vscode.commands.registerCommand('cognitivelint.a11y.rescan', async () => {
-      vscode.window.showInformationMessage(
-        'CognitiveLint Accessibility Agent rescans automatically as you edit JSX/TSX files.',
+      void vscode.window.showInformationMessage(
+        'CognitiveLint Accessibility Agent rescans automatically as you edit JSX/TSX files. Ask @Screen Reader Agent, @Keyboard Agent, or @Cognitive Agent in Chat for deeper guidance.',
       );
     }),
   );

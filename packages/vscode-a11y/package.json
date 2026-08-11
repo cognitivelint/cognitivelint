@@ -1,13 +1,13 @@
 {
   "name": "cognitivelint-a11y",
   "displayName": "CognitiveLint Accessibility Agent",
-  "description": "AI-powered accessibility guidance for React developers — jsx-a11y + Screen Reader, Keyboard, and Cognitive personas",
+  "description": "Accessibility guidance for React — jsx-a11y + Screen Reader, Keyboard, and Cognitive subagents using your editor's built-in AI",
   "version": "0.1.0",
   "publisher": "cognitivelint",
   "license": "MIT",
   "private": true,
   "engines": {
-    "vscode": "^1.85.0"
+    "vscode": "^1.90.0"
   },
   "categories": [
     "Linters",
@@ -19,11 +19,15 @@
     "a11y",
     "react",
     "jsx-a11y",
-    "cognitivelint"
+    "cognitivelint",
+    "chat-participant"
   ],
   "activationEvents": [
     "onLanguage:javascriptreact",
-    "onLanguage:typescriptreact"
+    "onLanguage:typescriptreact",
+    "onChatParticipant:cognitivelint.screenReader",
+    "onChatParticipant:cognitivelint.keyboard",
+    "onChatParticipant:cognitivelint.cognitive"
   ],
   "main": "./dist/extension.js",
   "contributes": {
@@ -43,6 +47,29 @@
       {
         "command": "cognitivelint.a11y.rescan",
         "title": "CognitiveLint: Rescan Accessibility"
+      }
+    ],
+    "chatParticipants": [
+      {
+        "id": "cognitivelint.screenReader",
+        "fullName": "Screen Reader Agent",
+        "name": "screen-reader",
+        "description": "Explain how JSX affects screen-reader users and how to fix it",
+        "isSticky": true
+      },
+      {
+        "id": "cognitivelint.keyboard",
+        "fullName": "Keyboard Agent",
+        "name": "keyboard",
+        "description": "Explain keyboard accessibility issues and remediations",
+        "isSticky": true
+      },
+      {
+        "id": "cognitivelint.cognitive",
+        "fullName": "Cognitive Agent",
+        "name": "cognitive",
+        "description": "Explain cognitive accessibility burden and clearer labeling",
+        "isSticky": true
       }
     ],
     "configuration": {
@@ -82,11 +109,10 @@
     "package": "pnpm build && echo 'Extension built to dist/'"
   },
   "dependencies": {
-    "@cognitivelint/a11y": "workspace:*",
     "@cognitivelint/a11y-server": "workspace:*",
     "vscode-languageclient": "^9.0.1"
   },
   "devDependencies": {
-    "@types/vscode": "^1.85.0"
+    "@types/vscode": "^1.90.0"
   }
 }

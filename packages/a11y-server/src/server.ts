@@ -3,12 +3,15 @@ import {
   applyFixToSource,
   askPersona,
   buildContext,
+  buildFixPrompt,
   createGateway,
   generateHeuristicFix,
   getWcagGuidance,
   validateFix,
   type EnrichedFinding,
   type FixProposal,
+  type HumanImpact,
+  type LmClient,
   type PersonaId,
 } from '@cognitivelint/a11y';
 import {
@@ -36,9 +39,19 @@ const COMMANDS = {
   ignore: 'cognitivelint.a11y.ignore',
 } as const;
 
+/** Custom LSP request handled by the VS Code / Cursor extension via vscode.lm */
+export const EDITOR_LM_REQUEST = 'cognitivelint/editorLm/complete';
+
 interface DocState {
   findings: EnrichedFinding[];
   version: number;
+}
+
+interface EditorLmResponse {
+  ok: boolean;
+  text?: string;
+  model?: string;
+  message?: string;
 }
 
 export function startServer(connection: Connection): void {
@@ -46,6 +59,19 @@ export function startServer(connection: Connection): void {
   const state = new Map<string, DocState>();
   const ignored = new Set<string>();
   let workspaceRoot = '';
+
+  const editorLm: LmClient = {
+    name: 'editor-builtin',
+    async complete(prompt: string): Promise<string> {
+      const response = (await connection.sendRequest(EDITOR_LM_REQUEST, {
+        prompt,
+      })) as EditorLmResponse;
+      if (!response?.ok || !response.text) {
+        throw new Error(response?.message ?? 'Editor language model unavailable');
+      }
+      return response.text;
+    },
+  };
 
   connection.onInitialize((params: InitializeParams): InitializeResult => {
     workspaceRoot = params.workspaceFolders?.[0]?.uri ?? params.rootUri ?? '';
@@ -67,7 +93,9 @@ export function startServer(connection: Connection): void {
   });
 
   connection.onInitialized(() => {
-    connection.console.log('CognitiveLint Accessibility Agent ready');
+    connection.console.log(
+      'CognitiveLint Accessibility Agent ready (editor LM subagents via vscode.lm)',
+    );
   });
 
   const refresh = async (doc: TextDocument) => {
@@ -177,16 +205,20 @@ export function startServer(connection: Connection): void {
 
     const filePath = uriToPath(uri);
     const context = buildContext(filePath, doc.getText(), finding, docState.findings);
+    const gateway = createGateway(editorLm);
 
     switch (params.command) {
-      case COMMANDS.explain:
+      case COMMANDS.explain: {
+        const impact = await enrichExplain(gateway, finding, context, finding.primaryPersona);
         return {
           ok: true,
           kind: 'explanation',
-          title: `${finding.humanImpact.personaLabel}`,
-          markdown: finding.humanImpact.narrative,
-          finding,
+          title: impact.personaLabel,
+          markdown: impact.narrative,
+          finding: { ...finding, humanImpact: impact },
+          usedEditorLm: gateway.hasLm,
         };
+      }
 
       case COMMANDS.wcag:
         return {
@@ -199,27 +231,32 @@ export function startServer(connection: Connection): void {
       case COMMANDS.askKeyboard:
       case COMMANDS.askCognitive: {
         const persona = commandToPersona(params.command);
-        const impact = await askPersona(persona, finding, context);
+        const impact = await enrichExplain(gateway, finding, context, persona);
         return {
           ok: true,
           kind: 'explanation',
           title: impact.personaLabel,
           markdown: impact.narrative,
+          usedEditorLm: true,
         };
       }
 
       case COMMANDS.fix: {
-        const gateway = createGateway();
-        const fix =
-          (await gateway.generateFix({ finding, context, useAi: false })) ??
+        let fix =
+          (await gateway.generateFix({ finding, context, useAi: true }).catch(() => null)) ??
           generateHeuristicFix(finding, context);
+
+        // If LM returned nothing useful, keep heuristic
+        fix ??= generateHeuristicFix(finding, context);
 
         if (!fix) {
           return {
             ok: false,
             kind: 'fix',
-            message: 'No safe automated fix available. Review the human-impact guidance and update manually.',
+            message:
+              'No safe automated fix available. Ask a persona subagent in Chat, or update manually from the human-impact guidance.',
             markdown: finding.humanImpact.narrative,
+            prompt: buildFixPrompt(finding, context),
           };
         }
 
@@ -235,6 +272,8 @@ export function startServer(connection: Connection): void {
             fix.description,
             '',
             `Confidence: ${fix.confidence}% (${fix.confidenceBand})`,
+            '',
+            '_Powered by your editor\'s built-in agent model when available; otherwise heuristic._',
             '',
             fix.diff,
             '',
@@ -273,10 +312,27 @@ export function startServer(connection: Connection): void {
     }
   });
 
-  // Keep unused root referenced for future workspace config
   void workspaceRoot;
 
   connection.listen();
+}
+
+async function enrichExplain(
+  gateway: ReturnType<typeof createGateway>,
+  finding: EnrichedFinding,
+  context: ReturnType<typeof buildContext>,
+  persona: PersonaId,
+): Promise<HumanImpact> {
+  try {
+    return await gateway.explain({
+      finding,
+      context,
+      persona,
+      useAi: true,
+    });
+  } catch {
+    return askPersona(persona, finding, context, null);
+  }
 }
 
 function makeCommandAction(title: string, command: string, args: unknown[]): CodeAction {
