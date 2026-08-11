@@ -2,7 +2,7 @@ import { buildContext } from './context.js';
 import { runJsxA11y } from './eslint-runner.js';
 import { explainWithPersona } from './personas/impact.js';
 import { runSemanticScan } from './semantic-scanner.js';
-import { AccessibilityAIGateway, aiAvailable } from './ai/gateway.js';
+import { AccessibilityAIGateway, type LmClient } from './ai/gateway.js';
 import type {
   AnalyzeOptions,
   AnalyzeResult,
@@ -12,6 +12,9 @@ import type {
 /**
  * Full accessibility analysis pipeline:
  * JSX → eslint-plugin-jsx-a11y → semantic scan → persona human impact
+ *
+ * Batch analysis uses deterministic persona templates (fast, offline).
+ * Live editor LM enrichment happens on-demand via Quick Fix / chat subagents.
  */
 export async function analyzeFile(options: AnalyzeOptions): Promise<AnalyzeResult> {
   const { filePath, sourceCode } = options;
@@ -20,7 +23,6 @@ export async function analyzeFile(options: AnalyzeOptions): Promise<AnalyzeResul
   const deterministic = runJsxA11y(sourceCode, filePath);
   const semantic = runSemanticScan(sourceCode, filePath);
 
-  // Deduplicate overlapping icon-only / control-has-associated-label style findings
   const merged = dedupeFindings([...deterministic, ...semantic]);
 
   if (!enrich) {
@@ -35,8 +37,9 @@ export async function analyzeFile(options: AnalyzeOptions): Promise<AnalyzeResul
     };
   }
 
-  const useAi = options.useAi === true && aiAvailable(options.apiKey);
-  const gateway = useAi ? new AccessibilityAIGateway(options.apiKey) : null;
+  const lm = options.lm ?? null;
+  const useAi = options.useAi === true && lm !== null;
+  const gateway = useAi ? new AccessibilityAIGateway(lm) : null;
 
   const findings: EnrichedFinding[] = [];
   for (const finding of merged) {
@@ -47,7 +50,6 @@ export async function analyzeFile(options: AnalyzeOptions): Promise<AnalyzeResul
           context,
           persona: finding.primaryPersona,
           useAi: true,
-          ...(options.apiKey !== undefined ? { apiKey: options.apiKey } : {}),
         })
       : explainWithPersona(finding, finding.primaryPersona, context);
 
@@ -68,7 +70,6 @@ function dedupeFindings<T extends { id: string; ruleId: string; location: { star
   const seen = new Set<string>();
   const out: T[] = [];
 
-  // Prefer jsx-a11y when both fire on same line for similar issues
   const sorted = [...findings].sort((a, b) => {
     const aDet = a.ruleId.startsWith('jsx-a11y/') ? 0 : 1;
     const bDet = b.ruleId.startsWith('jsx-a11y/') ? 0 : 1;
@@ -100,3 +101,5 @@ function family(ruleId: string): string {
   }
   return ruleId;
 }
+
+export type { LmClient };

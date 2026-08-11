@@ -1,4 +1,3 @@
-import Anthropic from '@anthropic-ai/sdk';
 import { explainWithPersona, getWcagGuidance } from '../personas/impact.js';
 import { generateHeuristicFix } from '../fix/generate.js';
 import {
@@ -14,11 +13,17 @@ import {
   type PersonaId,
 } from '../types.js';
 
-function hasApiKey(apiKey?: string): boolean {
-  return Boolean(apiKey ?? process.env.ANTHROPIC_API_KEY ?? process.env.COGNITIVELINT_API_KEY);
+/**
+ * Host-provided language model client.
+ * In VS Code / Cursor this is backed by `vscode.lm` (Copilot, Cursor, etc.).
+ * No external API keys are required — the editor's built-in agent models are used.
+ */
+export interface LmClient {
+  readonly name: string;
+  complete(prompt: string): Promise<string>;
 }
 
-function extractJson<T>(text: string): T | null {
+export function extractJson<T>(text: string): T | null {
   const fenced = text.match(/```(?:json)?\s*([\s\S]*?)```/);
   const raw = fenced?.[1]?.trim() ?? text.trim();
   try {
@@ -37,44 +42,28 @@ function extractJson<T>(text: string): T | null {
   }
 }
 
-/**
- * AI gateway for accessibility personas.
- * Falls back to deterministic human-impact templates when no API key is configured.
- */
-export class AccessibilityAIGateway {
-  private client: Anthropic | null;
+export function buildPersonaExplainPrompt(
+  persona: PersonaId,
+  finding: ExplainRequest['finding'],
+  context: AnalysisContext,
+): string {
+  return `You are the ${PERSONA_LABELS[persona]} (${PERSONA_ICONS[persona]}) — a CognitiveLint accessibility subagent.
 
-  constructor(apiKey?: string) {
-    const key = apiKey ?? process.env.ANTHROPIC_API_KEY ?? process.env.COGNITIVELINT_API_KEY;
-    this.client = key ? new Anthropic({ apiKey: key }) : null;
-  }
-
-  async explain(request: ExplainRequest): Promise<HumanImpact> {
-    const persona = request.persona ?? request.finding.primaryPersona;
-    const baseline = explainWithPersona(request.finding, persona, request.context);
-
-    if (!request.useAi || !this.client) {
-      return baseline;
-    }
-
-    try {
-      const prompt = `You are the ${PERSONA_LABELS[persona]} (${PERSONA_ICONS[persona]}) in CognitiveLint.
-
-Mission:
+Mission by persona:
 - Screen Reader: evaluate screen-reader semantics and announcements
 - Keyboard: evaluate keyboard reachability and operation
 - Cognitive: evaluate ambiguity, memory load, unclear actions, destructive clarity
 
 Finding:
-Rule: ${request.finding.ruleId}
-Message: ${request.finding.message}
+Rule: ${finding.ruleId}
+Message: ${finding.message}
 Snippet:
 \`\`\`tsx
-${request.finding.snippet ?? request.context.nearbyJsx ?? ''}
+${finding.snippet ?? context.nearbyJsx ?? ''}
 \`\`\`
 
-Component: ${request.context.componentName ?? 'unknown'}
-Nearby identifiers: ${(request.context.localIdentifiers ?? []).slice(0, 20).join(', ')}
+Component: ${context.componentName ?? 'unknown'}
+Nearby identifiers: ${(context.localIdentifiers ?? []).slice(0, 20).join(', ')}
 
 Return JSON only with:
 - whatHappened
@@ -86,16 +75,75 @@ Return JSON only with:
 - confidence: 0-100
 - narrative: markdown explanation in first person as the persona
 - wcagRefs: string array`;
+}
 
-      const response = await this.client.messages.create({
-        model: 'claude-sonnet-4-20250514',
-        max_tokens: 1024,
-        messages: [{ role: 'user', content: prompt }],
-      });
+export function buildFixPrompt(finding: EnrichedFinding, context: AnalysisContext): string {
+  return `You are the CognitiveLint accessibility remediation subagent.
 
-      const content = response.content[0];
-      if (content?.type !== 'text') return baseline;
+Generate the smallest safe accessibility fix for React JSX/TSX.
 
+Finding: ${finding.ruleId} — ${finding.message}
+Persona: ${finding.primaryPersona}
+Human impact: ${finding.humanImpact.whatHappened}
+
+Code:
+\`\`\`tsx
+${finding.snippet ?? context.nearbyJsx ?? ''}
+\`\`\`
+
+Context identifiers: ${(context.localIdentifiers ?? []).join(', ')}
+Component: ${context.componentName ?? 'unknown'}
+
+Rules:
+- Smallest safe change only
+- Prefer semantic HTML
+- Never invent large refactors
+- Keep behavior the same
+- Return JSON: { description, original, replacement, confidence }
+
+original must be an exact substring of the provided code.`;
+}
+
+export function buildPersonaChatSystemPrompt(persona: PersonaId): string {
+  const missions: Record<PersonaId, string> = {
+    'screen-reader':
+      'Evaluate whether important information and interactions are understandable through screen-reader-oriented semantics (names, roles, states, headings, labels, announcements).',
+    keyboard:
+      'Evaluate whether interactions can be completed without a mouse (focus, keyboard activation, non-semantic click handlers, dialogs/menus/tabs).',
+    cognitive:
+      'Identify unnecessary cognitive burden: ambiguous labels, unclear actions, poor errors, missing recovery, inconsistent terminology, destructive actions without clarity.',
+  };
+
+  return `You are ${PERSONA_ICONS[persona]} ${PERSONA_LABELS[persona]}, a CognitiveLint accessibility subagent running inside the user's editor (VS Code or Cursor).
+
+${missions[persona]}
+
+Speak in first person as this persona. Explain human impact clearly, cite relevant WCAG when useful, and propose the smallest safe code fix when asked. Prefer semantic HTML over ARIA when both work.`;
+}
+
+/**
+ * Accessibility reasoning gateway.
+ * Uses an injected editor LM client when available; otherwise deterministic templates/heuristics.
+ */
+export class AccessibilityAIGateway {
+  constructor(private readonly lm: LmClient | null = null) {}
+
+  get hasLm(): boolean {
+    return this.lm !== null;
+  }
+
+  async explain(request: ExplainRequest): Promise<HumanImpact> {
+    const persona = request.persona ?? request.finding.primaryPersona;
+    const baseline = explainWithPersona(request.finding, persona, request.context);
+
+    if (!request.useAi || !this.lm) {
+      return baseline;
+    }
+
+    try {
+      const text = await this.lm.complete(
+        buildPersonaExplainPrompt(persona, request.finding, request.context),
+      );
       const parsed = extractJson<{
         whatHappened: string;
         whoIsAffected: string;
@@ -106,7 +154,7 @@ Return JSON only with:
         confidence: number;
         narrative: string;
         wcagRefs?: string[];
-      }>(content.text);
+      }>(text);
 
       if (!parsed) return baseline;
 
@@ -138,49 +186,18 @@ Return JSON only with:
   async generateFix(request: FixRequest): Promise<FixProposal | null> {
     const heuristic = generateHeuristicFix(request.finding, request.context);
 
-    if (!request.useAi || !this.client) {
+    if (!request.useAi || !this.lm) {
       return heuristic;
     }
 
     try {
-      const prompt = `You are generating the smallest safe accessibility fix for React JSX/TSX.
-
-Finding: ${request.finding.ruleId} — ${request.finding.message}
-Persona: ${request.finding.primaryPersona}
-Human impact: ${request.finding.humanImpact.whatHappened}
-
-Code:
-\`\`\`tsx
-${request.finding.snippet ?? request.context.nearbyJsx ?? ''}
-\`\`\`
-
-Context identifiers: ${(request.context.localIdentifiers ?? []).join(', ')}
-Component: ${request.context.componentName ?? 'unknown'}
-
-Rules:
-- Smallest safe change only
-- Prefer semantic HTML
-- Never invent large refactors
-- Keep behavior the same
-- Return JSON: { description, original, replacement, confidence }
-
-original must be an exact substring of the provided code.`;
-
-      const response = await this.client.messages.create({
-        model: 'claude-sonnet-4-20250514',
-        max_tokens: 1024,
-        messages: [{ role: 'user', content: prompt }],
-      });
-
-      const content = response.content[0];
-      if (content?.type !== 'text') return heuristic;
-
+      const text = await this.lm.complete(buildFixPrompt(request.finding, request.context));
       const parsed = extractJson<{
         description: string;
         original: string;
         replacement: string;
         confidence: number;
-      }>(content.text);
+      }>(text);
 
       if (!parsed?.original || !parsed.replacement) return heuristic;
       if (!request.context.sourceCode.includes(parsed.original)) return heuristic;
@@ -198,7 +215,12 @@ original must be an exact substring of the provided code.`;
         description: parsed.description,
         original: parsed.original,
         replacement: parsed.replacement,
-        diff: ['```diff', ...parsed.original.split('\n').map((l) => `- ${l}`), ...parsed.replacement.split('\n').map((l) => `+ ${l}`), '```'].join('\n'),
+        diff: [
+          '```diff',
+          ...parsed.original.split('\n').map((l) => `- ${l}`),
+          ...parsed.replacement.split('\n').map((l) => `+ ${l}`),
+          '```',
+        ].join('\n'),
         range: { startLine, startColumn, endLine, endColumn },
         confidence: parsed.confidence,
         confidenceBand: confidenceBand(parsed.confidence),
@@ -210,26 +232,21 @@ original must be an exact substring of the provided code.`;
   }
 }
 
-export function createGateway(apiKey?: string): AccessibilityAIGateway {
-  return new AccessibilityAIGateway(apiKey);
-}
-
-export function aiAvailable(apiKey?: string): boolean {
-  return hasApiKey(apiKey);
+export function createGateway(lm: LmClient | null = null): AccessibilityAIGateway {
+  return new AccessibilityAIGateway(lm);
 }
 
 export async function askPersona(
   persona: PersonaId,
   finding: EnrichedFinding,
   context: AnalysisContext,
-  apiKey?: string,
+  lm: LmClient | null = null,
 ): Promise<HumanImpact> {
-  const gateway = createGateway(apiKey);
+  const gateway = createGateway(lm);
   return gateway.explain({
     finding,
     context,
     persona,
-    useAi: aiAvailable(apiKey),
-    ...(apiKey !== undefined ? { apiKey } : {}),
+    useAi: lm !== null,
   });
 }
