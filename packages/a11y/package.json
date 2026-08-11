@@ -1,0 +1,52 @@
+{
+  "name": "@cognitivelint/a11y",
+  "version": "0.1.0",
+  "description": "Accessibility analysis engine for CognitiveLint — jsx-a11y + AI personas",
+  "author": "Deepak Koul",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/cognitivelint/cognitivelint.git",
+    "directory": "packages/a11y"
+  },
+  "homepage": "https://github.com/cognitivelint/cognitivelint#readme",
+  "bugs": {
+    "url": "https://github.com/cognitivelint/cognitivelint/issues"
+  },
+  "keywords": [
+    "cognitivelint",
+    "accessibility",
+    "a11y",
+    "jsx-a11y",
+    "react",
+    "eslint"
+  ],
+  "type": "module",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
+    }
+  },
+  "files": [
+    "dist"
+  ],
+  "scripts": {
+    "build": "tsc",
+    "dev": "tsc --watch",
+    "test": "vitest run",
+    "typecheck": "tsc --noEmit",
+    "clean": "rm -rf dist .turbo *.tsbuildinfo"
+  },
+  "dependencies": {
+    "@anthropic-ai/sdk": "^0.52.0",
+    "@typescript-eslint/parser": "^8.34.0",
+    "eslint": "^9.28.0",
+    "eslint-plugin-jsx-a11y": "^6.10.2"
+  },
+  "devDependencies": {
+    "@types/eslint": "^9.6.1"
+  }
+}

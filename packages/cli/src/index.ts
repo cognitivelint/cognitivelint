@@ -48,4 +48,16 @@ program
     console.log('Auto-fix coming soon. Check the findings from "cognitivelint scan" for manual suggestions.');
   });
 
+program
+  .command('a11y')
+  .description('Analyze JSX/TSX with CognitiveLint Accessibility Agent (jsx-a11y + personas)')
+  .option('-p, --path <path>', 'Project path to scan')
+  .option('-f, --format <format>', 'Output format (terminal|json)', 'terminal')
+  .option('--fix', 'Generate and apply safe accessibility fixes')
+  .option('--dry-run', 'Preview fixes without writing files')
+  .action(async (options) => {
+    const { a11y } = await import('./commands/a11y.js');
+    await a11y(options);
+  });
+
 program.parse();

@@ -29,6 +29,7 @@
     "clean": "rm -rf dist .turbo *.tsbuildinfo"
   },
   "dependencies": {
+    "@cognitivelint/a11y": "workspace:*",
     "@cognitivelint/core": "workspace:*",
     "@cognitivelint/config": "workspace:*",
     "@cognitivelint/parser-react": "workspace:*",

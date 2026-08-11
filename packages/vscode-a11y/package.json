@@ -1,0 +1,92 @@
+{
+  "name": "cognitivelint-a11y",
+  "displayName": "CognitiveLint Accessibility Agent",
+  "description": "AI-powered accessibility guidance for React developers — jsx-a11y + Screen Reader, Keyboard, and Cognitive personas",
+  "version": "0.1.0",
+  "publisher": "cognitivelint",
+  "license": "MIT",
+  "private": true,
+  "engines": {
+    "vscode": "^1.85.0"
+  },
+  "categories": [
+    "Linters",
+    "Programming Languages",
+    "Other"
+  ],
+  "keywords": [
+    "accessibility",
+    "a11y",
+    "react",
+    "jsx-a11y",
+    "cognitivelint"
+  ],
+  "activationEvents": [
+    "onLanguage:javascriptreact",
+    "onLanguage:typescriptreact"
+  ],
+  "main": "./dist/extension.js",
+  "contributes": {
+    "commands": [
+      {
+        "command": "cognitivelint.a11y.explain",
+        "title": "CognitiveLint: Explain Human Impact"
+      },
+      {
+        "command": "cognitivelint.a11y.fix",
+        "title": "CognitiveLint: Generate Accessibility Fix"
+      },
+      {
+        "command": "cognitivelint.a11y.wcag",
+        "title": "CognitiveLint: Explain WCAG Guidance"
+      },
+      {
+        "command": "cognitivelint.a11y.rescan",
+        "title": "CognitiveLint: Rescan Accessibility"
+      }
+    ],
+    "configuration": {
+      "title": "CognitiveLint Accessibility",
+      "properties": {
+        "cognitivelint.a11y.enable": {
+          "type": "boolean",
+          "default": true,
+          "description": "Enable CognitiveLint Accessibility Agent diagnostics"
+        },
+        "cognitivelint.a11y.trace.server": {
+          "type": "string",
+          "enum": ["off", "messages", "verbose"],
+          "default": "off",
+          "description": "Traces communication between VS Code and the language server"
+        }
+      }
+    },
+    "menus": {
+      "commandPalette": [
+        {
+          "command": "cognitivelint.a11y.explain",
+          "when": "editorLangId == typescriptreact || editorLangId == javascriptreact"
+        },
+        {
+          "command": "cognitivelint.a11y.fix",
+          "when": "editorLangId == typescriptreact || editorLangId == javascriptreact"
+        }
+      ]
+    }
+  },
+  "scripts": {
+    "build": "tsc -p ./",
+    "dev": "tsc -p ./ --watch",
+    "typecheck": "tsc -p ./ --noEmit",
+    "clean": "rm -rf dist .turbo *.tsbuildinfo",
+    "package": "pnpm build && echo 'Extension built to dist/'"
+  },
+  "dependencies": {
+    "@cognitivelint/a11y": "workspace:*",
+    "@cognitivelint/a11y-server": "workspace:*",
+    "vscode-languageclient": "^9.0.1"
+  },
+  "devDependencies": {
+    "@types/vscode": "^1.85.0"
+  }
+}
