@@ -8,6 +8,7 @@ import {
   TransportKind,
 } from 'vscode-languageclient/node';
 import { completeWithEditorLm } from './editorLm';
+import { EXTENSION_ID } from './ids';
 import { registerPersonaSubagents } from './personas';
 
 let client: LanguageClient | undefined;
@@ -20,10 +21,14 @@ export async function activate(context: vscode.ExtensionContext): Promise<void> 
     return;
   }
 
-  // Persona subagents in Chat — backed by Copilot / Cursor built-in models
-  registerPersonaSubagents(context);
-
+  // Start the language server first so diagnostics/Quick Fix work even if Chat participants fail
   const serverModule = resolveServerModule(context);
+  if (!fs.existsSync(serverModule)) {
+    void vscode.window.showErrorMessage(
+      `CognitiveLint language server not found at ${serverModule}. Reinstall extension ${EXTENSION_ID}.`,
+    );
+    return;
+  }
 
   const serverOptions: ServerOptions = {
     run: {
@@ -63,7 +68,6 @@ export async function activate(context: vscode.ExtensionContext): Promise<void> 
     clientOptions,
   );
 
-  // Language server asks the extension to complete prompts via vscode.lm
   client.onRequest(
     EDITOR_LM_REQUEST,
     async (params: { prompt: string }, token: vscode.CancellationToken) => {
@@ -74,13 +78,29 @@ export async function activate(context: vscode.ExtensionContext): Promise<void> 
   context.subscriptions.push(
     vscode.commands.registerCommand('cognitivelint.a11y.rescan', async () => {
       void vscode.window.showInformationMessage(
-        'CognitiveLint rescans as you edit. Quick Fix: Fix · Why? · Ignore. Deeper persona help: @screen-reader, @keyboard, @cognitive in Chat.',
+        `${EXTENSION_ID}: rescans as you edit. Quick Fix: Fix · Why? · Ignore. Chat: @a11y-screen-reader · @a11y-keyboard · @a11y-cognitive`,
       );
     }),
   );
 
-  await client.start();
-  context.subscriptions.push({ dispose: () => { void client?.stop(); } });
+  try {
+    await client.start();
+    context.subscriptions.push({ dispose: () => { void client?.stop(); } });
+  } catch (error) {
+    const message = error instanceof Error ? error.message : String(error);
+    void vscode.window.showErrorMessage(
+      `Failed to start CognitiveLint language server (${EXTENSION_ID}): ${message}`,
+    );
+    return;
+  }
+
+  // Optional Chat personas — never block core diagnostics if registration fails
+  try {
+    registerPersonaSubagents(context);
+  } catch (error) {
+    const message = error instanceof Error ? error.message : String(error);
+    console.warn(`[${EXTENSION_ID}] Chat persona registration skipped: ${message}`);
+  }
 }
 
 export async function deactivate(): Promise<void> {
@@ -102,7 +122,7 @@ function resolveServerModule(context: vscode.ExtensionContext): string {
     }
   }
 
-  return path.join(context.extensionPath, '..', 'a11y-server', 'dist', 'index.js');
+  return path.join(context.extensionPath, 'server', 'index.js');
 }
 
 interface CommandResult {

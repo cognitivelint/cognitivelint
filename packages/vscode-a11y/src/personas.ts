@@ -1,11 +1,13 @@
 import * as vscode from 'vscode';
 import { completeWithEditorLm } from './editorLm';
+import { CHAT_HANDLES, CHAT_PARTICIPANTS, EXTENSION_ID } from './ids';
 
 type PersonaId = 'screen-reader' | 'keyboard' | 'cognitive';
 
 interface PersonaDef {
   id: PersonaId;
   participantId: string;
+  handle: string;
   label: string;
   icon: string;
   description: string;
@@ -15,7 +17,8 @@ interface PersonaDef {
 const PERSONAS: PersonaDef[] = [
   {
     id: 'screen-reader',
-    participantId: 'cognitivelint.screenReader',
+    participantId: CHAT_PARTICIPANTS.screenReader,
+    handle: CHAT_HANDLES.screenReader,
     label: 'Screen Reader Agent',
     icon: '🔊',
     description:
@@ -25,7 +28,8 @@ const PERSONAS: PersonaDef[] = [
   },
   {
     id: 'keyboard',
-    participantId: 'cognitivelint.keyboard',
+    participantId: CHAT_PARTICIPANTS.keyboard,
+    handle: CHAT_HANDLES.keyboard,
     label: 'Keyboard Agent',
     icon: '⌨',
     description:
@@ -35,7 +39,8 @@ const PERSONAS: PersonaDef[] = [
   },
   {
     id: 'cognitive',
-    participantId: 'cognitivelint.cognitive',
+    participantId: CHAT_PARTICIPANTS.cognitive,
+    handle: CHAT_HANDLES.cognitive,
     label: 'Cognitive Agent',
     icon: '🧠',
     description:
@@ -46,17 +51,23 @@ const PERSONAS: PersonaDef[] = [
 ];
 
 /**
- * Register accessibility personas as Chat participants (editor subagents).
- * Invoked in VS Code / Cursor Chat as @Screen Reader Agent, @Keyboard Agent, @Cognitive Agent.
- * Backed by the host's built-in agent models via vscode.lm — no API keys.
+ * Register accessibility personas as Chat participants under the installed extension ID.
+ * Handles: @a11y-screen-reader, @a11y-keyboard, @a11y-cognitive
  */
 export function registerPersonaSubagents(context: vscode.ExtensionContext): void {
   for (const persona of PERSONAS) {
-    const participant = vscode.chat.createChatParticipant(
-      persona.participantId,
-      createHandler(persona),
-    );
-    context.subscriptions.push(participant);
+    try {
+      const participant = vscode.chat.createChatParticipant(
+        persona.participantId,
+        createHandler(persona),
+      );
+      context.subscriptions.push(participant);
+    } catch (error) {
+      const message = error instanceof Error ? error.message : String(error);
+      console.warn(
+        `[${EXTENSION_ID}] Failed to register chat participant ${persona.participantId}: ${message}`,
+      );
+    }
   }
 }
 
@@ -77,7 +88,7 @@ function createHandler(persona: PersonaDef): vscode.ChatRequestHandler {
         : selection;
 
     const prompt = [
-      `You are ${persona.icon} ${persona.label}, a CognitiveLint accessibility subagent running inside the user's editor (VS Code or Cursor).`,
+      `You are ${persona.icon} ${persona.label}, a CognitiveLint accessibility subagent in extension ${EXTENSION_ID}.`,
       '',
       persona.mission,
       '',
@@ -101,6 +112,8 @@ function createHandler(persona: PersonaDef): vscode.ChatRequestHandler {
           '',
           result.message,
           '',
+          `Extension: \`${EXTENSION_ID}\` · Chat handle: \`@${persona.handle}\``,
+          '',
           'CognitiveLint personas use your editor’s built-in agent models — no separate API key.',
         ].join('\n'),
       );
@@ -108,7 +121,7 @@ function createHandler(persona: PersonaDef): vscode.ChatRequestHandler {
     }
 
     stream.markdown(result.text);
-    stream.markdown(`\n\n---\n_Model: \`${result.model}\`_`);
+    stream.markdown(`\n\n---\n_Model: \`${result.model}\` · Extension: \`${EXTENSION_ID}\`_`);
     return {};
   };
 }

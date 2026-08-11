@@ -30,9 +30,10 @@
   "activationEvents": [
     "onLanguage:javascriptreact",
     "onLanguage:typescriptreact",
-    "onChatParticipant:cognitivelint.screenReader",
-    "onChatParticipant:cognitivelint.keyboard",
-    "onChatParticipant:cognitivelint.cognitive"
+    "onStartupFinished",
+    "onChatParticipant:cognitivelint.cognitivelint-a11y.screenReader",
+    "onChatParticipant:cognitivelint.cognitivelint-a11y.keyboard",
+    "onChatParticipant:cognitivelint.cognitivelint-a11y.cognitive"
   ],
   "main": "./dist/extension.js",
   "contributes": {
@@ -52,23 +53,23 @@
     ],
     "chatParticipants": [
       {
-        "id": "cognitivelint.screenReader",
+        "id": "cognitivelint.cognitivelint-a11y.screenReader",
         "fullName": "Screen Reader Agent",
-        "name": "screen-reader",
+        "name": "a11y-screen-reader",
         "description": "Explain how JSX affects screen-reader users and how to fix it",
         "isSticky": true
       },
       {
-        "id": "cognitivelint.keyboard",
+        "id": "cognitivelint.cognitivelint-a11y.keyboard",
         "fullName": "Keyboard Agent",
-        "name": "keyboard",
+        "name": "a11y-keyboard",
         "description": "Explain keyboard accessibility issues and remediations",
         "isSticky": true
       },
       {
-        "id": "cognitivelint.cognitive",
+        "id": "cognitivelint.cognitivelint-a11y.cognitive",
         "fullName": "Cognitive Agent",
-        "name": "cognitive",
+        "name": "a11y-cognitive",
         "description": "Explain cognitive accessibility burden and clearer labeling",
         "isSticky": true
       }
