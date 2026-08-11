@@ -5,9 +5,9 @@ VS Code / Cursor extension that brings accessibility feedback into the editor wh
 ## Features
 
 - Deterministic diagnostics via `eslint-plugin-jsx-a11y`
-- Human-impact explanations from Screen Reader, Keyboard, and Cognitive personas
-- Chat **subagents** (`@screen-reader`, `@keyboard`, `@cognitive`) backed by the editor’s built-in models via `vscode.lm`
-- Quick Fix actions: explain, generate fix, WCAG guidance, ask a persona, ignore
+- Quick Fix menu with three actions only: **Fix**, **Why?**, **Ignore**
+- **Why?** combines human impact + WCAG in one explanation
+- Chat **subagents** (`@screen-reader`, `@keyboard`, `@cognitive`) for deeper persona exploration via `vscode.lm`
 - Fix preview with diff + jsx-a11y validation before apply
 - **No separate Claude/OpenAI API key** — uses Copilot (VS Code) or Cursor agent models
 

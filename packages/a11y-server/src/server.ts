@@ -1,18 +1,14 @@
 import {
   analyzeFile,
   applyFixToSource,
-  askPersona,
   buildContext,
-  buildFixPrompt,
   createGateway,
+  formatWhyExplanation,
   generateHeuristicFix,
-  getWcagGuidance,
   validateFix,
   type EnrichedFinding,
   type FixProposal,
-  type HumanImpact,
   type LmClient,
-  type PersonaId,
 } from '@cognitivelint/a11y';
 import {
   CodeAction,
@@ -29,12 +25,10 @@ import {
 import { TextDocument } from 'vscode-languageserver-textdocument';
 
 const COMMANDS = {
+  why: 'cognitivelint.a11y.why',
+  /** @deprecated kept for palette compatibility — same as why */
   explain: 'cognitivelint.a11y.explain',
   fix: 'cognitivelint.a11y.fix',
-  wcag: 'cognitivelint.a11y.wcag',
-  askScreenReader: 'cognitivelint.a11y.askScreenReader',
-  askKeyboard: 'cognitivelint.a11y.askKeyboard',
-  askCognitive: 'cognitivelint.a11y.askCognitive',
   applyFix: 'cognitivelint.a11y.applyFix',
   ignore: 'cognitivelint.a11y.ignore',
 } as const;
@@ -79,7 +73,7 @@ export function startServer(connection: Connection): void {
       capabilities: {
         textDocumentSync: TextDocumentSyncKind.Incremental,
         codeActionProvider: {
-          codeActionKinds: [CodeActionKind.QuickFix, CodeActionKind.Refactor],
+          codeActionKinds: [CodeActionKind.QuickFix],
         },
         executeCommandProvider: {
           commands: Object.values(COMMANDS),
@@ -93,9 +87,7 @@ export function startServer(connection: Connection): void {
   });
 
   connection.onInitialized(() => {
-    connection.console.log(
-      'CognitiveLint Accessibility Agent ready (editor LM subagents via vscode.lm)',
-    );
+    connection.console.log('CognitiveLint Accessibility Agent ready');
   });
 
   const refresh = async (doc: TextDocument) => {
@@ -146,49 +138,17 @@ export function startServer(connection: Connection): void {
 
   connection.onCodeAction((params: CodeActionParams): CodeAction[] => {
     const docState = state.get(params.textDocument.uri);
-    const doc = documents.get(params.textDocument.uri);
-    if (!docState || !doc) return [];
+    if (!docState) return [];
 
     const actions: CodeAction[] = [];
     for (const finding of docState.findings) {
       if (!overlaps(params.range, finding)) continue;
 
+      // Quick Fix menu: Fix · Why? · Ignore — nothing else
       actions.push(
-        makeCommandAction(
-          '🔊 Explain human impact',
-          COMMANDS.explain,
-          [params.textDocument.uri, finding.id],
-        ),
-        makeCommandAction(
-          '✨ Generate accessibility fix',
-          COMMANDS.fix,
-          [params.textDocument.uri, finding.id],
-        ),
-        makeCommandAction(
-          '📖 Explain relevant WCAG guidance',
-          COMMANDS.wcag,
-          [params.textDocument.uri, finding.id],
-        ),
-        makeCommandAction(
-          '🔊 Ask Screen Reader Agent',
-          COMMANDS.askScreenReader,
-          [params.textDocument.uri, finding.id],
-        ),
-        makeCommandAction(
-          '⌨ Ask Keyboard Agent',
-          COMMANDS.askKeyboard,
-          [params.textDocument.uri, finding.id],
-        ),
-        makeCommandAction(
-          '🧠 Ask Cognitive Agent',
-          COMMANDS.askCognitive,
-          [params.textDocument.uri, finding.id],
-        ),
-        makeCommandAction(
-          '🚫 Ignore',
-          COMMANDS.ignore,
-          [params.textDocument.uri, finding.id],
-        ),
+        makeCommandAction('✨ Fix', COMMANDS.fix, [params.textDocument.uri, finding.id]),
+        makeCommandAction('❓ Why?', COMMANDS.why, [params.textDocument.uri, finding.id]),
+        makeCommandAction('🚫 Ignore', COMMANDS.ignore, [params.textDocument.uri, finding.id]),
       );
     }
     return actions;
@@ -208,36 +168,25 @@ export function startServer(connection: Connection): void {
     const gateway = createGateway(editorLm);
 
     switch (params.command) {
+      case COMMANDS.why:
       case COMMANDS.explain: {
-        const impact = await enrichExplain(gateway, finding, context, finding.primaryPersona);
+        let impact = finding.humanImpact;
+        try {
+          impact = await gateway.explain({
+            finding,
+            context,
+            persona: finding.primaryPersona,
+            useAi: true,
+          });
+        } catch {
+          // keep deterministic impact
+        }
+
         return {
           ok: true,
           kind: 'explanation',
-          title: impact.personaLabel,
-          markdown: impact.narrative,
-          finding: { ...finding, humanImpact: impact },
-          usedEditorLm: gateway.hasLm,
-        };
-      }
-
-      case COMMANDS.wcag:
-        return {
-          ok: true,
-          kind: 'wcag',
-          markdown: getWcagGuidance(finding),
-        };
-
-      case COMMANDS.askScreenReader:
-      case COMMANDS.askKeyboard:
-      case COMMANDS.askCognitive: {
-        const persona = commandToPersona(params.command);
-        const impact = await enrichExplain(gateway, finding, context, persona);
-        return {
-          ok: true,
-          kind: 'explanation',
-          title: impact.personaLabel,
-          markdown: impact.narrative,
-          usedEditorLm: true,
+          title: 'Why?',
+          markdown: formatWhyExplanation(finding, impact),
         };
       }
 
@@ -246,17 +195,14 @@ export function startServer(connection: Connection): void {
           (await gateway.generateFix({ finding, context, useAi: true }).catch(() => null)) ??
           generateHeuristicFix(finding, context);
 
-        // If LM returned nothing useful, keep heuristic
         fix ??= generateHeuristicFix(finding, context);
 
         if (!fix) {
           return {
             ok: false,
             kind: 'fix',
-            message:
-              'No safe automated fix available. Ask a persona subagent in Chat, or update manually from the human-impact guidance.',
-            markdown: finding.humanImpact.narrative,
-            prompt: buildFixPrompt(finding, context),
+            message: 'No safe automated fix available. Use Why? for guidance, then update manually.',
+            markdown: formatWhyExplanation(finding),
           };
         }
 
@@ -267,13 +213,11 @@ export function startServer(connection: Connection): void {
           fix,
           validation,
           markdown: [
-            '✨ **Proposed accessibility fix**',
+            '✨ **Fix**',
             '',
             fix.description,
             '',
             `Confidence: ${fix.confidence}% (${fix.confidenceBand})`,
-            '',
-            '_Powered by your editor\'s built-in agent model when available; otherwise heuristic._',
             '',
             fix.diff,
             '',
@@ -313,26 +257,7 @@ export function startServer(connection: Connection): void {
   });
 
   void workspaceRoot;
-
   connection.listen();
-}
-
-async function enrichExplain(
-  gateway: ReturnType<typeof createGateway>,
-  finding: EnrichedFinding,
-  context: ReturnType<typeof buildContext>,
-  persona: PersonaId,
-): Promise<HumanImpact> {
-  try {
-    return await gateway.explain({
-      finding,
-      context,
-      persona,
-      useAi: true,
-    });
-  } catch {
-    return askPersona(persona, finding, context, null);
-  }
 }
 
 function makeCommandAction(title: string, command: string, args: unknown[]): CodeAction {
@@ -400,10 +325,4 @@ function uriToPath(uri: string): string {
 
 function ignoreKey(filePath: string, finding: EnrichedFinding): string {
   return `${filePath}|${finding.ruleId}|${finding.location.startLine}|${finding.location.startColumn}`;
-}
-
-function commandToPersona(command: string): PersonaId {
-  if (command === COMMANDS.askKeyboard) return 'keyboard';
-  if (command === COMMANDS.askCognitive) return 'cognitive';
-  return 'screen-reader';
 }
