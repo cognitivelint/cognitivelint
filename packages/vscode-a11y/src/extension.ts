@@ -47,7 +47,11 @@ export async function activate(context: vscode.ExtensionContext): Promise<void> 
     documentSelector: [
       { scheme: 'file', language: 'javascriptreact' },
       { scheme: 'file', language: 'typescriptreact' },
+      { scheme: 'untitled', language: 'javascriptreact' },
+      { scheme: 'untitled', language: 'typescriptreact' },
+      { scheme: 'file', pattern: '**/*.{jsx,tsx}' },
     ],
+    outputChannelName: 'CognitiveLint Accessibility',
     synchronize: {
       fileEvents: vscode.workspace.createFileSystemWatcher('**/*.{jsx,tsx}'),
     },

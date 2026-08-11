@@ -18,6 +18,7 @@ import {
   DiagnosticSeverity,
   type InitializeParams,
   type InitializeResult,
+  TextDocuments,
   TextDocumentSyncKind,
   type CodeActionParams,
   type ExecuteCommandParams,
@@ -26,14 +27,12 @@ import { TextDocument } from 'vscode-languageserver-textdocument';
 
 const COMMANDS = {
   why: 'cognitivelint.a11y.why',
-  /** @deprecated kept for palette compatibility — same as why */
   explain: 'cognitivelint.a11y.explain',
   fix: 'cognitivelint.a11y.fix',
   applyFix: 'cognitivelint.a11y.applyFix',
   ignore: 'cognitivelint.a11y.ignore',
 } as const;
 
-/** Custom LSP request handled by the VS Code / Cursor extension via vscode.lm */
 export const EDITOR_LM_REQUEST = 'cognitivelint/editorLm/complete';
 
 interface DocState {
@@ -49,7 +48,7 @@ interface EditorLmResponse {
 }
 
 export function startServer(connection: Connection): void {
-  const documents = new Map<string, TextDocument>();
+  const documents = new TextDocuments(TextDocument);
   const state = new Map<string, DocState>();
   const ignored = new Set<string>();
   let workspaceRoot = '';
@@ -81,7 +80,7 @@ export function startServer(connection: Connection): void {
       },
       serverInfo: {
         name: 'CognitiveLint Accessibility Agent',
-        version: '0.1.0',
+        version: '0.1.1',
       },
     };
   });
@@ -90,50 +89,45 @@ export function startServer(connection: Connection): void {
     connection.console.log('CognitiveLint Accessibility Agent ready');
   });
 
-  const refresh = async (doc: TextDocument) => {
-    if (!isJsx(doc.uri)) {
+  const refresh = async (doc: TextDocument): Promise<void> => {
+    if (!isJsx(doc.uri, doc.languageId)) {
       connection.sendDiagnostics({ uri: doc.uri, diagnostics: [] });
       return;
     }
 
-    const filePath = uriToPath(doc.uri);
-    const result = await analyzeFile({
-      filePath,
-      sourceCode: doc.getText(),
-      enrich: true,
-      useAi: false,
-    });
+    try {
+      const filePath = uriToPath(doc.uri);
+      const result = await analyzeFile({
+        filePath,
+        sourceCode: doc.getText(),
+        enrich: true,
+        useAi: false,
+      });
 
-    const findings = result.findings.filter((f) => !ignored.has(ignoreKey(filePath, f)));
-    state.set(doc.uri, { findings, version: doc.version });
-
-    const diagnostics: Diagnostic[] = findings.map((f) => toDiagnostic(f));
-    connection.sendDiagnostics({ uri: doc.uri, diagnostics });
+      const findings = result.findings.filter((f) => !ignored.has(ignoreKey(filePath, f)));
+      state.set(doc.uri, { findings, version: doc.version });
+      connection.sendDiagnostics({
+        uri: doc.uri,
+        diagnostics: findings.map((f) => toDiagnostic(f)),
+      });
+    } catch (error) {
+      const message = error instanceof Error ? error.message : String(error);
+      connection.console.error(`CognitiveLint analysis failed for ${doc.uri}: ${message}`);
+      connection.sendDiagnostics({ uri: doc.uri, diagnostics: [] });
+    }
   };
 
-  connection.onDidOpenTextDocument(async (event) => {
-    const doc = TextDocument.create(
-      event.textDocument.uri,
-      event.textDocument.languageId,
-      event.textDocument.version,
-      event.textDocument.text,
-    );
-    documents.set(doc.uri, doc);
-    await refresh(doc);
+  documents.onDidOpen((event) => {
+    void refresh(event.document);
   });
 
-  connection.onDidChangeTextDocument(async (event) => {
-    const current = documents.get(event.textDocument.uri);
-    if (!current) return;
-    const updated = TextDocument.update(current, event.contentChanges, event.textDocument.version);
-    documents.set(updated.uri, updated);
-    await refresh(updated);
+  documents.onDidChangeContent((event) => {
+    void refresh(event.document);
   });
 
-  connection.onDidCloseTextDocument((event) => {
-    documents.delete(event.textDocument.uri);
-    state.delete(event.textDocument.uri);
-    connection.sendDiagnostics({ uri: event.textDocument.uri, diagnostics: [] });
+  documents.onDidClose((event) => {
+    state.delete(event.document.uri);
+    connection.sendDiagnostics({ uri: event.document.uri, diagnostics: [] });
   });
 
   connection.onCodeAction((params: CodeActionParams): CodeAction[] => {
@@ -143,8 +137,6 @@ export function startServer(connection: Connection): void {
     const actions: CodeAction[] = [];
     for (const finding of docState.findings) {
       if (!overlaps(params.range, finding)) continue;
-
-      // Quick Fix menu: Fix · Why? · Ignore — nothing else
       actions.push(
         makeCommandAction('✨ Fix', COMMANDS.fix, [params.textDocument.uri, finding.id]),
         makeCommandAction('❓ Why?', COMMANDS.why, [params.textDocument.uri, finding.id]),
@@ -194,7 +186,6 @@ export function startServer(connection: Connection): void {
         let fix =
           (await gateway.generateFix({ finding, context, useAi: true }).catch(() => null)) ??
           generateHeuristicFix(finding, context);
-
         fix ??= generateHeuristicFix(finding, context);
 
         if (!fix) {
@@ -257,6 +248,9 @@ export function startServer(connection: Connection): void {
   });
 
   void workspaceRoot;
+
+  // TextDocuments must listen before connection.listen()
+  documents.listen(connection);
   connection.listen();
 }
 
@@ -265,13 +259,6 @@ function makeCommandAction(title: string, command: string, args: unknown[]): Cod
 }
 
 function toDiagnostic(finding: EnrichedFinding): Diagnostic {
-  const severity =
-    finding.severity === 'error'
-      ? DiagnosticSeverity.Warning
-      : finding.severity === 'warning'
-        ? DiagnosticSeverity.Warning
-        : DiagnosticSeverity.Information;
-
   const icon =
     finding.primaryPersona === 'screen-reader'
       ? '🔊'
@@ -290,7 +277,7 @@ function toDiagnostic(finding: EnrichedFinding): Diagnostic {
         character: Math.max(0, finding.location.endColumn - 1),
       },
     },
-    severity,
+    severity: DiagnosticSeverity.Warning,
     source: 'CognitiveLint Accessibility',
     code: finding.ruleId,
     message: `${icon} ${finding.humanImpact.personaLabel}: ${finding.humanImpact.whatHappened}`,
@@ -312,13 +299,14 @@ function overlaps(
   return range.start.line <= endLine && range.end.line >= startLine;
 }
 
-function isJsx(uri: string): boolean {
-  return /\.(jsx|tsx)$/i.test(uri);
+function isJsx(uri: string, languageId?: string): boolean {
+  if (languageId === 'javascriptreact' || languageId === 'typescriptreact') return true;
+  return /\.(jsx|tsx)([?#].*)?$/i.test(uri);
 }
 
 function uriToPath(uri: string): string {
   if (uri.startsWith('file://')) {
-    return decodeURIComponent(uri.replace('file://', ''));
+    return decodeURIComponent(uri.replace(/^file:\/\//, ''));
   }
   return uri;
 }
