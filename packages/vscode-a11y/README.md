@@ -35,16 +35,14 @@ Extension ID: **`cognitivelint.cognitivelint-a11y`**
 
 ```bash
 pnpm --filter cognitivelint-a11y package
-code --install-extension packages/vscode-a11y/cognitivelint-a11y-0.1.1.vsix --force
+code --uninstall-extension cognitivelint.cognitivelint-a11y
+code --install-extension packages/vscode-a11y/cognitivelint-a11y-0.1.2.vsix
 ```
 
 Then **Developer: Reload Window**.
 
-Quick Fix should show only: **Fix** · **Why?** · **Ignore**.
+Works in **VS Code and Cursor**. The language server is started with `TransportKind.ipc` (not Electron `process.execPath`), which is required for VS Code.
 
-If you still see the old 7-item menu (Explain human impact / Ask Screen Reader / …), an old VSIX is still active — uninstall it first:
+Quick Fix: **Fix** · **Why?** · **Ignore**.
 
-```bash
-code --uninstall-extension cognitivelint.cognitivelint-a11y
-code --install-extension packages/vscode-a11y/cognitivelint-a11y-0.1.1.vsix
-```
+If diagnostics are missing in VS Code, open **Output → CognitiveLint Accessibility** and confirm the server started.
