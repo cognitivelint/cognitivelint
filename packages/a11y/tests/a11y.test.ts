@@ -86,6 +86,21 @@ describe('human impact personas', () => {
     expect(impact.persona).toBe('keyboard');
     expect(impact.narrative).toContain('Keyboard Agent');
   });
+
+  it('combines human impact and WCAG in Why? explanation', async () => {
+    const { formatWhyExplanation } = await import('../src/index.js');
+    const code = `export function Settings() {
+  return <div onClick={openDialog}>Settings</div>;
+}
+`;
+    const result = await analyzeFile({ filePath: 'Settings.tsx', sourceCode: code });
+    const finding = result.findings[0]!;
+    const why = formatWhyExplanation(finding, finding.humanImpact);
+    expect(why).toContain('Why does this matter?');
+    expect(why).toContain('Who is affected');
+    expect(why).toContain('WCAG');
+    expect(why).toContain(finding.ruleId);
+  });
 });
 
 describe('fix generation + validation', () => {

@@ -74,7 +74,7 @@ export async function activate(context: vscode.ExtensionContext): Promise<void> 
   context.subscriptions.push(
     vscode.commands.registerCommand('cognitivelint.a11y.rescan', async () => {
       void vscode.window.showInformationMessage(
-        'CognitiveLint Accessibility Agent rescans automatically as you edit JSX/TSX files. Ask @Screen Reader Agent, @Keyboard Agent, or @Cognitive Agent in Chat for deeper guidance.',
+        'CognitiveLint rescans as you edit. Quick Fix: Fix · Why? · Ignore. Deeper persona help: @screen-reader, @keyboard, @cognitive in Chat.',
       );
     }),
   );

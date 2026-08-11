@@ -53,8 +53,11 @@ pnpm cognitivelint a11y --fix
 2. Open `packages/vscode-a11y` with **Run Extension** (F5), or install the built extension
 3. Ensure Copilot (VS Code) or Cursor Agent models are available and signed in
 4. Open a `.jsx` / `.tsx` file — see inline diagnostics
-5. Use Quick Fix (`Ctrl+.` / `Cmd+.`) for explain / fix / WCAG / ask persona
-6. Or open Chat and ask `@screen-reader`, `@keyboard`, or `@cognitive`
+5. Use Quick Fix (`Ctrl+.` / `Cmd+.`) — only three actions:
+   - **Fix** — generate a validated accessibility fix
+   - **Why?** — human impact + WCAG in one explanation
+   - **Ignore**
+6. For deeper persona exploration, open Chat and ask `@screen-reader`, `@keyboard`, or `@cognitive`
 
 Fixes always show a diff and validation summary before apply — never silent edits.
 
@@ -66,7 +69,6 @@ Diagnostics stay fast and offline (templates). Live LM enrichment happens on dem
 2. Install / run CognitiveLint Accessibility
 3. Open JSX/TSX
 4. Receive diagnostics
-5. Read human impact (or ask a persona subagent in Chat)
-6. Generate fix
-7. Review diff + validation
-8. Apply
+5. Open Why? if you need the human impact + WCAG
+6. Generate Fix, review diff + validation
+7. Apply

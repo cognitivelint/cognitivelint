@@ -272,3 +272,51 @@ export function getWcagGuidance(finding: AccessibilityFinding): string {
     `Recommended remediation: ${impact.whatToDo}`,
   ].join('\n');
 }
+
+/**
+ * Single "Why?" explanation: human impact + WCAG in one place.
+ * Used by the Quick Fix menu — not split across multiple near-duplicate actions.
+ */
+export function formatWhyExplanation(
+  finding: AccessibilityFinding,
+  impact: HumanImpact = explainWithPersona(finding),
+): string {
+  const refs = impact.wcagRefs?.length
+    ? impact.wcagRefs.map((r) => `- ${r}`).join('\n')
+    : '- Review WCAG 2.2 success criteria related to name, role, keyboard, and labels.';
+
+  const impactLabel =
+    impact.impactLevel === 'high'
+      ? 'High human impact'
+      : impact.impactLevel === 'potential'
+        ? 'Potential human impact'
+        : impact.impactLevel === 'medium'
+          ? 'Medium human impact'
+          : 'Low human impact';
+
+  return [
+    `**Why does this matter?**`,
+    '',
+    `${PERSONA_ICONS[impact.persona]} ${impact.personaLabel} · **${impactLabel}** · ${impact.confidence}% confidence`,
+    '',
+    `**What happened**`,
+    impact.whatHappened,
+    '',
+    `**Who is affected**`,
+    impact.whoIsAffected,
+    '',
+    `**What they experience**`,
+    impact.whatTheyExperience,
+    '',
+    `**Why it matters**`,
+    impact.whyItMatters,
+    '',
+    `**What to do**`,
+    impact.whatToDo,
+    '',
+    `**WCAG**`,
+    refs,
+    '',
+    `_Technical signal:_ \`${finding.ruleId}\` — ${finding.message}`,
+  ].join('\n');
+}

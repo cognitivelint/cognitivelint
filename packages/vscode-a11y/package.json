@@ -33,16 +33,12 @@
   "contributes": {
     "commands": [
       {
-        "command": "cognitivelint.a11y.explain",
-        "title": "CognitiveLint: Explain Human Impact"
-      },
-      {
         "command": "cognitivelint.a11y.fix",
-        "title": "CognitiveLint: Generate Accessibility Fix"
+        "title": "CognitiveLint: Fix"
       },
       {
-        "command": "cognitivelint.a11y.wcag",
-        "title": "CognitiveLint: Explain WCAG Guidance"
+        "command": "cognitivelint.a11y.why",
+        "title": "CognitiveLint: Why?"
       },
       {
         "command": "cognitivelint.a11y.rescan",
@@ -91,11 +87,11 @@
     "menus": {
       "commandPalette": [
         {
-          "command": "cognitivelint.a11y.explain",
+          "command": "cognitivelint.a11y.fix",
           "when": "editorLangId == typescriptreact || editorLangId == javascriptreact"
         },
         {
-          "command": "cognitivelint.a11y.fix",
+          "command": "cognitivelint.a11y.why",
           "when": "editorLangId == typescriptreact || editorLangId == javascriptreact"
         }
       ]
