@@ -30,16 +30,20 @@ export async function activate(context: vscode.ExtensionContext): Promise<void> 
     return;
   }
 
+  // IMPORTANT: In VS Code, process.execPath is Electron — not Node.
+  // Spawning Electron with a .js file works in some Cursor builds but fails in VS Code.
+  // Use IPC + module (child_process.fork) so both hosts start the server correctly.
   const serverOptions: ServerOptions = {
     run: {
-      command: process.execPath,
-      args: [serverModule, '--stdio'],
-      transport: TransportKind.stdio,
+      module: serverModule,
+      transport: TransportKind.ipc,
     },
     debug: {
-      command: process.execPath,
-      args: ['--nolazy', '--inspect=6009', serverModule, '--stdio'],
-      transport: TransportKind.stdio,
+      module: serverModule,
+      transport: TransportKind.ipc,
+      options: {
+        execArgv: ['--nolazy', '--inspect=6011'],
+      },
     },
   };
 
