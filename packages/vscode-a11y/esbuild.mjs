@@ -1,6 +1,6 @@
 import * as esbuild from 'esbuild';
+import { chmodSync } from 'node:fs';
 
-// Bundle extension
 await esbuild.build({
   entryPoints: ['src/extension.ts'],
   bundle: true,
@@ -10,10 +10,10 @@ await esbuild.build({
   platform: 'node',
   target: 'node18',
   sourcemap: false,
-  minify: true,
+  minify: false,
+  logLevel: 'info',
 });
 
-// Bundle server - mark ESLint internals as external (loaded at runtime)
 await esbuild.build({
   entryPoints: ['../a11y-server/src/index.ts'],
   bundle: true,
@@ -22,8 +22,11 @@ await esbuild.build({
   platform: 'node',
   target: 'node18',
   sourcemap: false,
-  minify: true,
+  minify: false,
+  // Launched via `node server/index.js` — do not inject a shebang (breaks CJS parse)
   external: ['jiti', 'jiti/package.json'],
+  logLevel: 'info',
 });
 
-console.log('Extension and server bundled successfully');
+chmodSync('server/index.js', 0o755);
+console.log('Bundled dist/extension.js and server/index.js');
