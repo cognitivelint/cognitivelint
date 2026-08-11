@@ -36,13 +36,17 @@ Extension ID: **`cognitivelint.cognitivelint-a11y`**
 ```bash
 pnpm --filter cognitivelint-a11y package
 code --uninstall-extension cognitivelint.cognitivelint-a11y
-code --install-extension packages/vscode-a11y/cognitivelint-a11y-0.1.2.vsix
+code --install-extension packages/vscode-a11y/cognitivelint-a11y-0.1.3.vsix
 ```
 
 Then **Developer: Reload Window**.
 
-Works in **VS Code and Cursor**. The language server is started with `TransportKind.ipc` (not Electron `process.execPath`), which is required for VS Code.
+Works in **VS Code and Cursor**.
 
-Quick Fix: **Fix** · **Why?** · **Ignore**.
+After install, open a `.tsx`/`.jsx` file. Output → **CognitiveLint Accessibility** should show lines like:
 
-If diagnostics are missing in VS Code, open **Output → CognitiveLint Accessibility** and confirm the server started.
+```text
+Analyzed file:///.../Upload.tsx → 1 finding(s) ...
+```
+
+If you only see “ready” and no “Analyzed …”, run **CognitiveLint: Rescan Accessibility**.

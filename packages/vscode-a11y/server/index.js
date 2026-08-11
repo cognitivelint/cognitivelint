@@ -273257,8 +273257,18 @@ function validateFix(sourceCode, filePath, fix, targetRuleId) {
 async function analyzeFile(options) {
   const { filePath, sourceCode } = options;
   const enrich = options.enrich !== false;
-  const deterministic = runJsxA11y(sourceCode, filePath);
-  const semantic = runSemanticScan(sourceCode, filePath);
+  let deterministic = [];
+  try {
+    deterministic = runJsxA11y(sourceCode, filePath);
+  } catch {
+    deterministic = [];
+  }
+  let semantic = [];
+  try {
+    semantic = runSemanticScan(sourceCode, filePath);
+  } catch {
+    semantic = [];
+  }
   const merged = dedupeFindings([...deterministic, ...semantic]);
   if (!enrich) {
     return {
@@ -273555,6 +273565,7 @@ var COMMANDS = {
   ignore: "cognitivelint.a11y.ignore"
 };
 var EDITOR_LM_REQUEST = "cognitivelint/editorLm/complete";
+var ANALYZE_NOTIFICATION = "cognitivelint/analyze";
 function startServer(connection2) {
   const documents = new import_node.TextDocuments(TextDocument);
   const state = /* @__PURE__ */ new Map();
@@ -273586,39 +273597,51 @@ function startServer(connection2) {
       },
       serverInfo: {
         name: "CognitiveLint Accessibility Agent",
-        version: "0.1.1"
+        version: "0.1.3"
       }
     };
   });
   connection2.onInitialized(() => {
-    connection2.console.log("CognitiveLint Accessibility Agent ready");
+    connection2.console.log(
+      "CognitiveLint Accessibility Agent ready \u2014 waiting for JSX/TSX documents"
+    );
   });
-  const refresh = async (doc) => {
-    if (!isJsx(doc.uri, doc.languageId)) {
-      connection2.sendDiagnostics({ uri: doc.uri, diagnostics: [] });
+  const refreshFromContent = async (uri, text, languageId, version) => {
+    if (!shouldAnalyze(uri, languageId, text)) {
+      connection2.console.log(
+        `Skipping ${uri} (languageId=${languageId || "unknown"}) \u2014 not treated as JSX/TSX`
+      );
+      connection2.sendDiagnostics({ uri, diagnostics: [] });
       return;
     }
     try {
-      const filePath = uriToPath(doc.uri);
+      const filePath = uriToPath(uri);
       const result = await analyzeFile({
         filePath,
-        sourceCode: doc.getText(),
+        sourceCode: text,
         enrich: true,
         useAi: false
       });
       const findings = result.findings.filter((f) => !ignored.has(ignoreKey(filePath, f)));
-      state.set(doc.uri, { findings, version: doc.version });
+      state.set(uri, { findings, version });
       connection2.sendDiagnostics({
-        uri: doc.uri,
+        uri,
         diagnostics: findings.map((f) => toDiagnostic(f))
       });
+      connection2.console.log(
+        `Analyzed ${uri} \u2192 ${findings.length} finding(s) (jsx-a11y=${result.deterministicCount}, semantic=${result.semanticCount})`
+      );
     } catch (error) {
       const message = error instanceof Error ? error.message : String(error);
-      connection2.console.error(`CognitiveLint analysis failed for ${doc.uri}: ${message}`);
-      connection2.sendDiagnostics({ uri: doc.uri, diagnostics: [] });
+      connection2.console.error(`CognitiveLint analysis failed for ${uri}: ${message}`);
+      connection2.sendDiagnostics({ uri, diagnostics: [] });
     }
   };
+  const refresh = async (doc) => {
+    await refreshFromContent(doc.uri, doc.getText(), doc.languageId, doc.version);
+  };
   documents.onDidOpen((event) => {
+    connection2.console.log(`didOpen ${event.document.uri} (${event.document.languageId})`);
     void refresh(event.document);
   });
   documents.onDidChangeContent((event) => {
@@ -273627,6 +273650,14 @@ function startServer(connection2) {
   documents.onDidClose((event) => {
     state.delete(event.document.uri);
     connection2.sendDiagnostics({ uri: event.document.uri, diagnostics: [] });
+  });
+  connection2.onNotification(ANALYZE_NOTIFICATION, (payload) => {
+    const version = payload.version ?? 1;
+    const languageId = payload.languageId ?? "";
+    const existing = documents.get(payload.uri);
+    if (!existing) {
+    }
+    void refreshFromContent(payload.uri, payload.text, languageId, version);
   });
   connection2.onCodeAction((params) => {
     const docState = state.get(params.textDocument.uri);
@@ -273646,11 +273677,15 @@ function startServer(connection2) {
     const [uri, findingId] = params.arguments ?? [];
     const doc = documents.get(uri);
     const docState = state.get(uri);
-    if (!doc || !docState) return { ok: false, message: "Document not analyzed" };
+    if (!docState) return { ok: false, message: "Document not analyzed yet \u2014 try Rescan" };
     const finding = docState.findings.find((f) => f.id === findingId);
     if (!finding) return { ok: false, message: "Finding not found" };
+    const text = doc?.getText() ?? "";
+    if (!text && !doc) {
+    }
     const filePath = uriToPath(uri);
-    const context = buildContext(filePath, doc.getText(), finding, docState.findings);
+    const sourceCode = text || "";
+    const context = buildContext(filePath, sourceCode, finding, docState.findings);
     const gateway = createGateway(editorLm);
     switch (params.command) {
       case COMMANDS.why:
@@ -273673,6 +273708,13 @@ function startServer(connection2) {
         };
       }
       case COMMANDS.fix: {
+        if (!sourceCode) {
+          return {
+            ok: false,
+            kind: "fix",
+            message: "Open the file and run CognitiveLint: Rescan, then try Fix again."
+          };
+        }
         let fix = await gateway.generateFix({ finding, context, useAi: true }).catch(() => null) ?? generateHeuristicFix(finding, context);
         fix ??= generateHeuristicFix(finding, context);
         if (!fix) {
@@ -273683,7 +273725,7 @@ function startServer(connection2) {
             markdown: formatWhyExplanation(finding)
           };
         }
-        const validation = validateFix(doc.getText(), filePath, fix, finding.ruleId);
+        const validation = validateFix(sourceCode, filePath, fix, finding.ruleId);
         return {
           ok: true,
           kind: "fix",
@@ -273707,6 +273749,12 @@ function startServer(connection2) {
       case COMMANDS.applyFix: {
         const fix = params.arguments?.[2];
         if (!fix) return { ok: false, message: "Missing fix payload" };
+        if (!doc) {
+          return {
+            ok: false,
+            message: "Document not loaded in language server \u2014 reopen the file and Rescan."
+          };
+        }
         const next = applyFixToSource(doc.getText(), fix);
         return {
           ok: true,
@@ -273722,7 +273770,8 @@ function startServer(connection2) {
       }
       case COMMANDS.ignore: {
         ignored.add(ignoreKey(filePath, finding));
-        await refresh(doc);
+        if (doc) await refresh(doc);
+        else connection2.sendDiagnostics({ uri, diagnostics: [] });
         return { ok: true, kind: "ignore", message: `Ignored ${finding.ruleId}` };
       }
       default:
@@ -273766,15 +273815,26 @@ function overlaps(range, finding) {
   const endLine = finding.location.endLine - 1;
   return range.start.line <= endLine && range.end.line >= startLine;
 }
-function isJsx(uri, languageId) {
+function shouldAnalyze(uri, languageId, text) {
   if (languageId === "javascriptreact" || languageId === "typescriptreact") return true;
-  return /\.(jsx|tsx)([?#].*)?$/i.test(uri);
+  if (/\.(jsx|tsx)([?#].*)?$/i.test(uri)) return true;
+  if ((languageId === "typescript" || languageId === "javascript") && (/</.test(text) || /\.(jsx|tsx)([?#].*)?$/i.test(uri))) {
+    return true;
+  }
+  return false;
 }
 function uriToPath(uri) {
-  if (uri.startsWith("file://")) {
+  if (!uri.startsWith("file:")) return uri;
+  try {
+    const url = new URL(uri);
+    let pathname = decodeURIComponent(url.pathname);
+    if (/^\/[A-Za-z]:\//.test(pathname)) {
+      pathname = pathname.slice(1);
+    }
+    return pathname;
+  } catch {
     return decodeURIComponent(uri.replace(/^file:\/\//, ""));
   }
-  return uri;
 }
 function ignoreKey(filePath, finding) {
   return `${filePath}|${finding.ruleId}|${finding.location.startLine}|${finding.location.startColumn}`;

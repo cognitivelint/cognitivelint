@@ -12,8 +12,10 @@ import { EXTENSION_ID } from './ids';
 import { registerPersonaSubagents } from './personas';
 
 let client: LanguageClient | undefined;
-
+const ANALYZE_NOTIFICATION = 'cognitivelint/analyze';
 const EDITOR_LM_REQUEST = 'cognitivelint/editorLm/complete';
+
+const debounceTimers = new Map<string, NodeJS.Timeout>();
 
 export async function activate(context: vscode.ExtensionContext): Promise<void> {
   const enable = vscode.workspace.getConfiguration('cognitivelint.a11y').get<boolean>('enable', true);
@@ -21,7 +23,6 @@ export async function activate(context: vscode.ExtensionContext): Promise<void> 
     return;
   }
 
-  // Start the language server first so diagnostics/Quick Fix work even if Chat participants fail
   const serverModule = resolveServerModule(context);
   if (!fs.existsSync(serverModule)) {
     void vscode.window.showErrorMessage(
@@ -30,9 +31,7 @@ export async function activate(context: vscode.ExtensionContext): Promise<void> 
     return;
   }
 
-  // IMPORTANT: In VS Code, process.execPath is Electron — not Node.
-  // Spawning Electron with a .js file works in some Cursor builds but fails in VS Code.
-  // Use IPC + module (child_process.fork) so both hosts start the server correctly.
+  // VS Code: process.execPath is Electron — use IPC module fork.
   const serverOptions: ServerOptions = {
     run: {
       module: serverModule,
@@ -53,9 +52,13 @@ export async function activate(context: vscode.ExtensionContext): Promise<void> 
       { scheme: 'file', language: 'typescriptreact' },
       { scheme: 'untitled', language: 'javascriptreact' },
       { scheme: 'untitled', language: 'typescriptreact' },
+      // VS Code may open .tsx/.jsx as typescript/javascript
+      { scheme: 'file', language: 'typescript', pattern: '**/*.{tsx,jsx}' },
+      { scheme: 'file', language: 'javascript', pattern: '**/*.{tsx,jsx}' },
       { scheme: 'file', pattern: '**/*.{jsx,tsx}' },
     ],
     outputChannelName: 'CognitiveLint Accessibility',
+    diagnosticCollectionName: 'cognitivelint-a11y',
     synchronize: {
       fileEvents: vscode.workspace.createFileSystemWatcher('**/*.{jsx,tsx}'),
     },
@@ -85,8 +88,14 @@ export async function activate(context: vscode.ExtensionContext): Promise<void> 
 
   context.subscriptions.push(
     vscode.commands.registerCommand('cognitivelint.a11y.rescan', async () => {
+      const editor = vscode.window.activeTextEditor;
+      if (!editor) {
+        void vscode.window.showInformationMessage('Open a JSX/TSX file to rescan.');
+        return;
+      }
+      await pushAnalyze(editor.document);
       void vscode.window.showInformationMessage(
-        `${EXTENSION_ID}: rescans as you edit. Quick Fix: Fix · Why? · Ignore. Chat: @a11y-screen-reader · @a11y-keyboard · @a11y-cognitive`,
+        `${EXTENSION_ID}: rescanned ${path.basename(editor.document.fileName)}. Check Output → CognitiveLint Accessibility.`,
       );
     }),
   );
@@ -102,7 +111,37 @@ export async function activate(context: vscode.ExtensionContext): Promise<void> 
     return;
   }
 
-  // Optional Chat personas — never block core diagnostics if registration fails
+  // Explicit analyze push — fixes VS Code when LSP didOpen sync does not fire
+  const schedule = (doc: vscode.TextDocument) => {
+    if (!isAnalyzable(doc)) return;
+    const key = doc.uri.toString();
+    const existing = debounceTimers.get(key);
+    if (existing) clearTimeout(existing);
+    debounceTimers.set(
+      key,
+      setTimeout(() => {
+        debounceTimers.delete(key);
+        void pushAnalyze(doc);
+      }, 200),
+    );
+  };
+
+  context.subscriptions.push(
+    vscode.workspace.onDidOpenTextDocument(schedule),
+    vscode.workspace.onDidChangeTextDocument((e) => schedule(e.document)),
+    vscode.window.onDidChangeActiveTextEditor((editor) => {
+      if (editor) schedule(editor.document);
+    }),
+  );
+
+  // Analyze already-open editors immediately after server start
+  for (const doc of vscode.workspace.textDocuments) {
+    schedule(doc);
+  }
+  if (vscode.window.activeTextEditor) {
+    await pushAnalyze(vscode.window.activeTextEditor.document);
+  }
+
   try {
     registerPersonaSubagents(context);
   } catch (error) {
@@ -114,6 +153,32 @@ export async function activate(context: vscode.ExtensionContext): Promise<void> 
 export async function deactivate(): Promise<void> {
   if (client) {
     await client.stop();
+  }
+}
+
+function isAnalyzable(doc: vscode.TextDocument): boolean {
+  if (doc.uri.scheme !== 'file' && doc.uri.scheme !== 'untitled') return false;
+  const lang = doc.languageId;
+  if (lang === 'javascriptreact' || lang === 'typescriptreact') return true;
+  if (/\.(jsx|tsx)$/i.test(doc.fileName)) return true;
+  if ((lang === 'javascript' || lang === 'typescript') && /<[A-Za-z]/.test(doc.getText())) {
+    return true;
+  }
+  return false;
+}
+
+async function pushAnalyze(doc: vscode.TextDocument): Promise<void> {
+  if (!client || !isAnalyzable(doc)) return;
+  try {
+    await client.sendNotification(ANALYZE_NOTIFICATION, {
+      uri: doc.uri.toString(),
+      languageId: doc.languageId,
+      version: doc.version,
+      text: doc.getText(),
+    });
+  } catch (error) {
+    const message = error instanceof Error ? error.message : String(error);
+    console.warn(`[${EXTENSION_ID}] analyze push failed: ${message}`);
   }
 }
 
