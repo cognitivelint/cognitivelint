@@ -18,13 +18,15 @@ Fix + re-run jsx-a11y    ← validate before apply
 
 ### Personas (Chat subagents)
 
-| Subagent | Chat handle | Focus |
-|----------|-------------|--------|
-| 🔊 Screen Reader Agent | `@screen-reader` | Accessible names, ARIA, headings, labels, announcements |
-| ⌨ Keyboard Agent | `@keyboard` | Focus, click-only interactions, keyboard operability |
-| 🧠 Cognitive Agent | `@cognitive` | Ambiguous labels, destructive clarity, cognitive burden |
+All personas belong to extension ID **`cognitivelint.cognitivelint-a11y`** (not separate extensions).
 
-These personas run as **editor chat participants**. They use the host’s built-in agent models through `vscode.lm` (GitHub Copilot in VS Code, Cursor models in Cursor). **No Anthropic/OpenAI API key is required.**
+| Subagent | Chat handle | Participant ID |
+|----------|-------------|----------------|
+| 🔊 Screen Reader Agent | `@a11y-screen-reader` | `cognitivelint.cognitivelint-a11y.screenReader` |
+| ⌨ Keyboard Agent | `@a11y-keyboard` | `cognitivelint.cognitivelint-a11y.keyboard` |
+| 🧠 Cognitive Agent | `@a11y-cognitive` | `cognitivelint.cognitivelint-a11y.cognitive` |
+
+Do **not** configure agents as `cognitivelint.cognitive` — that ID is not an installed extension. Use `cognitivelint.cognitivelint-a11y`.
 
 ## Packages
 
@@ -57,7 +59,7 @@ pnpm cognitivelint a11y --fix
    - **Fix** — generate a validated accessibility fix
    - **Why?** — human impact + WCAG in one explanation
    - **Ignore**
-6. For deeper persona exploration, open Chat and ask `@screen-reader`, `@keyboard`, or `@cognitive`
+6. For deeper persona exploration, open Chat and ask `@a11y-screen-reader`, `@a11y-keyboard`, or `@a11y-cognitive`
 
 Fixes always show a diff and validation summary before apply — never silent edits.
 

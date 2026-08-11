@@ -2,24 +2,39 @@
 
 VS Code / Cursor extension that brings accessibility feedback into the editor while you write React JSX/TSX.
 
+## Extension ID
+
+```text
+cognitivelint.cognitivelint-a11y
+```
+
+Verify install:
+
+```bash
+code --list-extensions | grep cognitivelint
+# → cognitivelint.cognitivelint-a11y
+```
+
+There is **no** separate extension named `cognitivelint.cognitive`. That string was a chat-participant ID and must not be used as an agent/extension ID. Point any Cursor/VS Code agent config at `cognitivelint.cognitivelint-a11y`.
+
 ## Features
 
 - Deterministic diagnostics via `eslint-plugin-jsx-a11y`
-- Quick Fix menu with three actions only: **Fix**, **Why?**, **Ignore**
-- **Why?** combines human impact + WCAG in one explanation
-- Chat **subagents** (`@screen-reader`, `@keyboard`, `@cognitive`) for deeper persona exploration via `vscode.lm`
+- Quick Fix menu: **Fix** · **Why?** · **Ignore**
+- **Why?** combines human impact + WCAG
+- Chat subagents (namespaced under the extension ID):
+  - `@a11y-screen-reader`
+  - `@a11y-keyboard`
+  - `@a11y-cognitive`
 - Fix preview with diff + jsx-a11y validation before apply
-- **No separate Claude/OpenAI API key** — uses Copilot (VS Code) or Cursor agent models
+- Uses editor built-in models via `vscode.lm` (no separate API key)
 
 ## Development
-
-From the monorepo root:
 
 ```bash
 pnpm install
 pnpm build
+pnpm --filter cognitivelint-a11y package   # if using esbuild/vsix scripts
 ```
 
-Then open this folder in VS Code/Cursor and run **Developer: Reload Window**, or launch an Extension Development Host pointing at `packages/vscode-a11y`.
-
-The language server is resolved from `@cognitivelint/a11y-server`. On explain/fix, the server requests completions from the extension through `cognitivelint/editorLm/complete`.
+Install the VSIX that publishes as `cognitivelint.cognitivelint-a11y`, then reload the window.
