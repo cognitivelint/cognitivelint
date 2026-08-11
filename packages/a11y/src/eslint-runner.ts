@@ -1,5 +1,6 @@
 import { Linter } from 'eslint';
 import jsxA11y from 'eslint-plugin-jsx-a11y';
+import tsParser from '@typescript-eslint/parser';
 import type { AccessibilityFinding } from './types.js';
 
 const JSX_A11Y_RULES: Record<string, 'error' | 'warn'> = {
@@ -71,16 +72,12 @@ export const RULE_PERSONA_MAP: Record<string, AccessibilityFinding['primaryPerso
   'jsx-a11y/tabindex-no-positive': 'keyboard',
 };
 
-function createLinter(): Linter {
-  const linter = new Linter({ configType: 'flat' });
-  return linter;
-}
-
 function flatConfig() {
   return [
     {
       files: ['**/*.{jsx,tsx,js,ts}'],
       languageOptions: {
+        parser: tsParser,
         ecmaVersion: 2022 as const,
         sourceType: 'module' as const,
         parserOptions: {
@@ -104,26 +101,37 @@ function getConfig() {
 
 /**
  * Run eslint-plugin-jsx-a11y against source text.
- * Reuses the deterministic rule engine — does not reinvent a11y rules.
+ * Uses @typescript-eslint/parser so real TSX (param types, generics) still parse.
  */
 export function runJsxA11y(
   sourceCode: string,
   filePath: string,
 ): AccessibilityFinding[] {
-  const linter = createLinter();
-  const filename = filePath.endsWith('.tsx') || filePath.endsWith('.jsx')
-    ? filePath
-    : `${filePath}.tsx`;
+  const linter = new Linter({ configType: 'flat' });
+  const filename =
+    filePath.endsWith('.tsx') || filePath.endsWith('.jsx') || filePath.endsWith('.ts') || filePath.endsWith('.js')
+      ? filePath
+      : `${filePath}.tsx`;
 
-  // ESLint 9 flat Linter needs typescript-eslint for TSX; use espree-compatible
-  // approach: strip types lightly or use @typescript-eslint/parser via defineConfig.
-  // For MVP we use the built-in parser with JSX for .jsx and a TS-aware path.
-  const messages = lintWithBestParser(linter, sourceCode, filename);
+  let messages: Linter.LintMessage[] = [];
+  try {
+    messages = linter.verify(sourceCode, getConfig(), { filename });
+  } catch {
+    // Last-resort: strip types and retry with jsx filename
+    try {
+      messages = linter.verify(neutralizeTsForJsxLint(sourceCode), getConfig(), {
+        filename: filename.replace(/\.tsx?$/, '.jsx'),
+      });
+    } catch {
+      return [];
+    }
+  }
 
   const lines = sourceCode.split('\n');
   const findings: AccessibilityFinding[] = [];
 
   for (const msg of messages) {
+    if (msg.fatal) continue;
     if (!msg.ruleId?.startsWith('jsx-a11y/')) continue;
 
     const startLine = msg.line;
@@ -154,50 +162,22 @@ export function runJsxA11y(
   return findings;
 }
 
-function lintWithBestParser(
-  linter: Linter,
-  sourceCode: string,
-  filename: string,
-): Linter.LintMessage[] {
-  const config = getConfig();
-
-  try {
-    // Prefer typescript-eslint parser when available for TSX
-    // Dynamic import is sync via createRequire pattern — use eslint's default
-    // with jsx for both; strip TypeScript-only syntax that breaks espree.
-    const code = filename.endsWith('.tsx') || filename.endsWith('.ts')
-      ? neutralizeTsForJsxLint(sourceCode)
-      : sourceCode;
-
-    return linter.verify(code, config, { filename: filename.replace(/\.tsx?$/, '.jsx') });
-  } catch {
-    return linter.verify(neutralizeTsForJsxLint(sourceCode), config, {
-      filename: 'file.jsx',
-    });
-  }
-}
-
 /**
- * Best-effort neutralization of TypeScript syntax so espree can parse JSX.
- * Accessibility rules inspect JSX attributes/children, not types.
+ * Best-effort neutralization of TypeScript syntax (fallback only).
  */
 export function neutralizeTsForJsxLint(source: string): string {
   let code = source;
-  // Remove type-only imports
   code = code.replace(/^import\s+type\s+.+?;?\s*$/gm, '');
-  // Remove `as Type` / `as const` assertions (simple cases)
   code = code.replace(/\s+as\s+const\b/g, '');
   code = code.replace(/\s+as\s+[A-Za-z0-9_.<>,\s|&[\]'"]+/g, '');
-  // Remove interface / type declarations
   code = code.replace(/^(export\s+)?(interface|type)\s+[^{;=]+[={][\s\S]*?(?:^}|;)\s*$/gm, '');
-  // Remove generic type params on function/component declarations (simple)
   code = code.replace(/function\s+([A-Za-z0-9_]+)\s*<[^>]+>/g, 'function $1');
   code = code.replace(/const\s+([A-Za-z0-9_]+)\s*(?::\s*[^=]+)?=/g, 'const $1 =');
-  // Remove satisfies
+  // Parameter / return type annotations: (e: React.DragEvent<...>) and ): Type
+  code = code.replace(/([,\(]\s*[A-Za-z_$][\w$]*)\s*:\s*[A-Za-z_$][\w$<>.[\]|&\s,'"]+/g, '$1');
+  code = code.replace(/\)\s*:\s*[A-Za-z_$][\w$<>.[\]|&\s,'"]+(?=\s*[{=>])/g, ')');
   code = code.replace(/\s+satisfies\s+[A-Za-z0-9_.<>,\s|&[\]]+/g, '');
-  // Remove enum blocks
   code = code.replace(/^(export\s+)?enum\s+\w+\s*\{[\s\S]*?\}\s*$/gm, '');
-  // Non-null assertions
   code = code.replace(/!(\.|\()/g, '$1');
   return code;
 }

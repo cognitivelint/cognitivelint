@@ -32,6 +32,45 @@ describe('runJsxA11y', () => {
       ),
     ).toBe(true);
   });
+
+  it('parses real TSX with typed handlers and flags click-only upload zones', () => {
+    const code = `import React from "react";
+
+interface UploadTabProps {
+  handleFileUpload: (event: React.ChangeEvent<HTMLInputElement>) => void;
+}
+
+export const UploadTab: React.FC<UploadTabProps> = ({ handleFileUpload }) => {
+  const handleDragOver = (e: React.DragEvent<HTMLDivElement>) => {
+    e.preventDefault();
+  };
+
+  const handleDrop = (e: React.DragEvent<HTMLDivElement>) => {
+    e.preventDefault();
+  };
+
+  return (
+    <div
+      className="rh-upload-area"
+      onClick={() => document.getElementById("csvFile")?.click()}
+      onDragOver={handleDragOver}
+      onDrop={handleDrop}
+    >
+      <i className="fas fa-cloud-upload-alt rh-upload-icon"></i>
+      <input type="file" id="csvFile" accept=".csv" hidden onChange={handleFileUpload} />
+    </div>
+  );
+};
+`;
+    const findings = runJsxA11y(code, 'UploadTab.tsx');
+    expect(
+      findings.some(
+        (f) =>
+          f.ruleId === 'jsx-a11y/click-events-have-key-events' ||
+          f.ruleId === 'jsx-a11y/no-static-element-interactions',
+      ),
+    ).toBe(true);
+  });
 });
 
 describe('semantic scanner', () => {
@@ -45,6 +84,36 @@ describe('semantic scanner', () => {
 }`;
     const findings = runSemanticScan(code, 'Toolbar.tsx');
     expect(findings.some((f) => f.ruleId === 'screen-reader/icon-only-button')).toBe(true);
+  });
+
+  it('detects Font Awesome icon-only buttons', () => {
+    const code = `function Close() {
+  return (
+    <button onClick={dismiss} title="Dismiss error">
+      <i className="fas fa-times"></i>
+    </button>
+  );
+}`;
+    const findings = runSemanticScan(code, 'Close.tsx');
+    expect(findings.some((f) => f.ruleId === 'screen-reader/icon-only-button')).toBe(true);
+  });
+
+  it('detects multiline click-only divs with nested handler braces', () => {
+    const code = `function DropZone() {
+  return (
+    <div
+      className="upload"
+      onClick={() => {
+        openPicker();
+      }}
+      onDragOver={prevent}
+    >
+      Drop files
+    </div>
+  );
+}`;
+    const findings = runSemanticScan(code, 'DropZone.tsx');
+    expect(findings.some((f) => f.ruleId === 'keyboard/click-only-div')).toBe(true);
   });
 
   it('detects ambiguous destructive labels', () => {

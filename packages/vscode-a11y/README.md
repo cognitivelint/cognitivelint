@@ -36,7 +36,7 @@ Extension ID: **`cognitivelint.cognitivelint-a11y`**
 ```bash
 pnpm --filter cognitivelint-a11y package
 code --uninstall-extension cognitivelint.cognitivelint-a11y
-code --install-extension packages/vscode-a11y/cognitivelint-a11y-0.1.3.vsix
+code --install-extension packages/vscode-a11y/cognitivelint-a11y-0.1.4.vsix
 ```
 
 Then **Developer: Reload Window**.

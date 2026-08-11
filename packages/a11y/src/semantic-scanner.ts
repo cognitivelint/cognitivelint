@@ -69,6 +69,69 @@ function escapeRegExp(s: string): string {
   return s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
 }
 
+/**
+ * Find JSX opening tags for the given tag names, handling multiline attrs and
+ * nested `{...}` expressions (so `>` inside expressions does not truncate).
+ */
+function findOpeningTags(
+  source: string,
+  tagNames: string[],
+): Array<{ start: number; end: number; tag: string; attrs: string }> {
+  const results: Array<{ start: number; end: number; tag: string; attrs: string }> = [];
+  const tagAlt = tagNames.map(escapeRegExp).join('|');
+  const startRe = new RegExp(`<(${tagAlt})\\b`, 'gi');
+  let m: RegExpExecArray | null;
+  while ((m = startRe.exec(source)) !== null) {
+    const start = m.index;
+    const tag = m[1] ?? '';
+    let i = start + m[0].length;
+    let depth = 0;
+    let quote: '"' | "'" | '`' | null = null;
+    while (i < source.length) {
+      const ch = source[i]!;
+      if (quote) {
+        if (ch === '\\' && quote !== '`') {
+          i += 2;
+          continue;
+        }
+        if (ch === quote) quote = null;
+        i += 1;
+        continue;
+      }
+      if (ch === '"' || ch === "'" || ch === '`') {
+        quote = ch;
+        i += 1;
+        continue;
+      }
+      if (ch === '{') {
+        depth += 1;
+        i += 1;
+        continue;
+      }
+      if (ch === '}') {
+        depth = Math.max(0, depth - 1);
+        i += 1;
+        continue;
+      }
+      if (ch === '>' && depth === 0) {
+        const end = i + 1;
+        const attrs = source.slice(start + m[0].length, i);
+        results.push({ start, end, tag, attrs });
+        break;
+      }
+      // Self-closing
+      if (ch === '/' && source[i + 1] === '>' && depth === 0) {
+        const end = i + 2;
+        const attrs = source.slice(start + m[0].length, i);
+        results.push({ start, end, tag, attrs });
+        break;
+      }
+      i += 1;
+    }
+  }
+  return results;
+}
+
 const PATTERNS: SemanticPattern[] = [
   {
     id: 'cognitive/ambiguous-action-label',
@@ -133,21 +196,20 @@ const PATTERNS: SemanticPattern[] = [
     severity: 'error',
     match(source) {
       const out: ReturnType<SemanticPattern['match']> = [];
-      const re = /<(div|span)\b([^>]*\bonClick\s*=\s*\{[^}]+\}[^>]*)>/gi;
-      let m: RegExpExecArray | null;
-      while ((m = re.exec(source)) !== null) {
-        const attrs = m[2] ?? '';
+      for (const tag of findOpeningTags(source, ['div', 'span'])) {
+        const attrs = tag.attrs;
+        if (!/\bonClick\s*=/.test(attrs)) continue;
         // Skip if already has keyboard handlers or role=button with tabIndex
         if (/\bonKey(Down|Up|Press)\s*=/.test(attrs)) continue;
         if (/\brole\s*=\s*["']button["']/.test(attrs) && /\btabIndex\s*=/.test(attrs)) continue;
-        const start = lineColFromIndex(source, m.index);
-        const end = lineColFromIndex(source, m.index + m[0].length);
+        const start = lineColFromIndex(source, tag.start);
+        const end = lineColFromIndex(source, tag.end);
         out.push({
           startLine: start.line,
           startColumn: start.column,
           endLine: end.line,
           endColumn: end.column,
-          matched: m[0],
+          matched: source.slice(tag.start, tag.end),
         });
       }
       return out;
@@ -167,7 +229,10 @@ const PATTERNS: SemanticPattern[] = [
         const inner = (m[2] ?? '').trim();
         if (/aria-label\s*=/.test(attrs) || /aria-labelledby\s*=/.test(attrs)) continue;
         const text = inner.replace(/<[^>]+>/g, '').replace(/\s+/g, ' ').trim();
-        const hasIcon = /Icon\s*\/?>|<svg\b|<[A-Z][A-Za-z0-9]*\s*\/>/.test(inner);
+        const hasIcon =
+          /Icon\s*\/?>|<svg\b|<[A-Z][A-Za-z0-9]*\s*\/>|<i\b[^>]*\bclass(Name)?=["'][^"']*\bfa[sbrl]?\b/i.test(
+            inner,
+          );
         if (hasIcon && text.length === 0) {
           const start = lineColFromIndex(source, m.index);
           const end = lineColFromIndex(source, m.index + m[0].length);
