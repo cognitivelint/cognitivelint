@@ -292,6 +292,19 @@ node packages/cli/dist/index.js scan
 | `@cognitivelint/rules` | 17 built-in cognitive UX rules |
 | `@cognitivelint/formatters` | Terminal, JSON, SARIF, HTML output |
 | `@cognitivelint/ai` | AI explanation layer (coming soon) |
+| `@cognitivelint/a11y` | Accessibility engine (jsx-a11y + personas + fix validation) |
+| `@cognitivelint/a11y-server` | Accessibility language server |
+| `cognitivelint-a11y` | VS Code / Cursor Accessibility Agent extension |
+
+## Accessibility Agent
+
+See [docs/accessibility-agent.md](./docs/accessibility-agent.md) for the VS Code/Cursor Accessibility Agent MVP:
+
+```bash
+# Deterministic jsx-a11y + Screen Reader / Keyboard / Cognitive personas
+pnpm cognitivelint a11y
+pnpm cognitivelint a11y --fix --dry-run
+```
 
 ## Contributing
 
