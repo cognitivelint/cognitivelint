@@ -1,8 +1,8 @@
 {
   "name": "cognitivelint-a11y",
   "displayName": "CognitiveLint Accessibility Agent",
-  "description": "Accessibility guidance for React — jsx-a11y + Screen Reader, Keyboard, and Cognitive subagents using your editor's built-in AI",
-  "version": "0.1.0",
+  "description": "Accessibility guidance for React — jsx-a11y diagnostics with Fix / Why? / Ignore quick fixes",
+  "version": "0.1.1",
   "publisher": "cognitivelint",
   "license": "MIT",
   "private": true,
@@ -24,16 +24,12 @@
     "a11y",
     "react",
     "jsx-a11y",
-    "cognitivelint",
-    "chat-participant"
+    "cognitivelint"
   ],
   "activationEvents": [
     "onLanguage:javascriptreact",
     "onLanguage:typescriptreact",
-    "onStartupFinished",
-    "onChatParticipant:cognitivelint.cognitivelint-a11y.screenReader",
-    "onChatParticipant:cognitivelint.cognitivelint-a11y.keyboard",
-    "onChatParticipant:cognitivelint.cognitivelint-a11y.cognitive"
+    "onStartupFinished"
   ],
   "main": "./dist/extension.js",
   "contributes": {
@@ -104,17 +100,18 @@
     }
   },
   "scripts": {
-    "build": "tsc -p ./",
-    "dev": "tsc -p ./ --watch",
+    "build": "node ./esbuild.mjs",
+    "dev": "node ./esbuild.mjs && tsc -p ./ --watch --noEmit",
     "typecheck": "tsc -p ./ --noEmit",
-    "clean": "rm -rf dist .turbo *.tsbuildinfo",
-    "package": "pnpm build && echo 'Extension built to dist/'"
+    "clean": "rm -rf dist server .turbo *.tsbuildinfo *.vsix",
+    "package": "pnpm build && npx --yes @vscode/vsce package --no-dependencies --allow-missing-repository"
   },
   "dependencies": {
     "@cognitivelint/a11y-server": "workspace:*",
     "vscode-languageclient": "^9.0.1"
   },
   "devDependencies": {
-    "@types/vscode": "^1.90.0"
+    "@types/vscode": "^1.90.0",
+    "esbuild": "^0.25.5"
   }
 }

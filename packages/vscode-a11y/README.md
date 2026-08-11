@@ -29,12 +29,22 @@ There is **no** separate extension named `cognitivelint.cognitive`. That string 
 - Fix preview with diff + jsx-a11y validation before apply
 - Uses editor built-in models via `vscode.lm` (no separate API key)
 
-## Development
+## Install / reinstall
+
+Extension ID: **`cognitivelint.cognitivelint-a11y`**
 
 ```bash
-pnpm install
-pnpm build
-pnpm --filter cognitivelint-a11y package   # if using esbuild/vsix scripts
+pnpm --filter cognitivelint-a11y package
+code --install-extension packages/vscode-a11y/cognitivelint-a11y-0.1.1.vsix --force
 ```
 
-Install the VSIX that publishes as `cognitivelint.cognitivelint-a11y`, then reload the window.
+Then **Developer: Reload Window**.
+
+Quick Fix should show only: **Fix** · **Why?** · **Ignore**.
+
+If you still see the old 7-item menu (Explain human impact / Ask Screen Reader / …), an old VSIX is still active — uninstall it first:
+
+```bash
+code --uninstall-extension cognitivelint.cognitivelint-a11y
+code --install-extension packages/vscode-a11y/cognitivelint-a11y-0.1.1.vsix
+```
