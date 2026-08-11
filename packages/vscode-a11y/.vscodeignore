@@ -1,0 +1,11 @@
+.turbo/
+.vscode/
+src/
+tests/
+*.ts
+tsconfig.json
+tsconfig.tsbuildinfo
+esbuild.mjs
+node_modules/
+*.vsix
+**/*.map

@@ -6,6 +6,11 @@
   "publisher": "cognitivelint",
   "license": "MIT",
   "private": true,
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/cognitivelint/cognitivelint.git",
+    "directory": "packages/vscode-a11y"
+  },
   "engines": {
     "vscode": "^1.90.0"
   },
