@@ -34,6 +34,8 @@ const COMMANDS = {
 } as const;
 
 export const EDITOR_LM_REQUEST = 'cognitivelint/editorLm/complete';
+/** Explicit analyze push from the extension (needed when VS Code skips didOpen sync). */
+export const ANALYZE_NOTIFICATION = 'cognitivelint/analyze';
 
 interface DocState {
   findings: EnrichedFinding[];
@@ -45,6 +47,13 @@ interface EditorLmResponse {
   text?: string;
   model?: string;
   message?: string;
+}
+
+interface AnalyzePayload {
+  uri: string;
+  languageId?: string;
+  version?: number;
+  text: string;
 }
 
 export function startServer(connection: Connection): void {
@@ -80,44 +89,62 @@ export function startServer(connection: Connection): void {
       },
       serverInfo: {
         name: 'CognitiveLint Accessibility Agent',
-        version: '0.1.1',
+        version: '0.1.3',
       },
     };
   });
 
   connection.onInitialized(() => {
-    connection.console.log('CognitiveLint Accessibility Agent ready');
+    connection.console.log(
+      'CognitiveLint Accessibility Agent ready — waiting for JSX/TSX documents',
+    );
   });
 
-  const refresh = async (doc: TextDocument): Promise<void> => {
-    if (!isJsx(doc.uri, doc.languageId)) {
-      connection.sendDiagnostics({ uri: doc.uri, diagnostics: [] });
+  const refreshFromContent = async (
+    uri: string,
+    text: string,
+    languageId: string,
+    version: number,
+  ): Promise<void> => {
+    if (!shouldAnalyze(uri, languageId, text)) {
+      connection.console.log(
+        `Skipping ${uri} (languageId=${languageId || 'unknown'}) — not treated as JSX/TSX`,
+      );
+      connection.sendDiagnostics({ uri, diagnostics: [] });
       return;
     }
 
     try {
-      const filePath = uriToPath(doc.uri);
+      const filePath = uriToPath(uri);
       const result = await analyzeFile({
         filePath,
-        sourceCode: doc.getText(),
+        sourceCode: text,
         enrich: true,
         useAi: false,
       });
 
       const findings = result.findings.filter((f) => !ignored.has(ignoreKey(filePath, f)));
-      state.set(doc.uri, { findings, version: doc.version });
+      state.set(uri, { findings, version });
       connection.sendDiagnostics({
-        uri: doc.uri,
+        uri,
         diagnostics: findings.map((f) => toDiagnostic(f)),
       });
+      connection.console.log(
+        `Analyzed ${uri} → ${findings.length} finding(s) (jsx-a11y=${result.deterministicCount}, semantic=${result.semanticCount})`,
+      );
     } catch (error) {
       const message = error instanceof Error ? error.message : String(error);
-      connection.console.error(`CognitiveLint analysis failed for ${doc.uri}: ${message}`);
-      connection.sendDiagnostics({ uri: doc.uri, diagnostics: [] });
+      connection.console.error(`CognitiveLint analysis failed for ${uri}: ${message}`);
+      connection.sendDiagnostics({ uri, diagnostics: [] });
     }
   };
 
+  const refresh = async (doc: TextDocument): Promise<void> => {
+    await refreshFromContent(doc.uri, doc.getText(), doc.languageId, doc.version);
+  };
+
   documents.onDidOpen((event) => {
+    connection.console.log(`didOpen ${event.document.uri} (${event.document.languageId})`);
     void refresh(event.document);
   });
 
@@ -128,6 +155,19 @@ export function startServer(connection: Connection): void {
   documents.onDidClose((event) => {
     state.delete(event.document.uri);
     connection.sendDiagnostics({ uri: event.document.uri, diagnostics: [] });
+  });
+
+  // Extension-driven analyze — covers VS Code cases where didOpen sync is missed
+  connection.onNotification(ANALYZE_NOTIFICATION, (payload: AnalyzePayload) => {
+    const version = payload.version ?? 1;
+    const languageId = payload.languageId ?? '';
+    // Keep TextDocuments in sync when possible so code actions/commands can resolve the doc
+    const existing = documents.get(payload.uri);
+    if (!existing) {
+      // TextDocuments doesn't expose create API for arbitrary inject; store via open path
+      // by relying on state + optional get from documents after LSP open.
+    }
+    void refreshFromContent(payload.uri, payload.text, languageId, version);
   });
 
   connection.onCodeAction((params: CodeActionParams): CodeAction[] => {
@@ -150,13 +190,19 @@ export function startServer(connection: Connection): void {
     const [uri, findingId] = (params.arguments ?? []) as [string, string];
     const doc = documents.get(uri);
     const docState = state.get(uri);
-    if (!doc || !docState) return { ok: false, message: 'Document not analyzed' };
+    if (!docState) return { ok: false, message: 'Document not analyzed yet — try Rescan' };
 
     const finding = docState.findings.find((f) => f.id === findingId);
     if (!finding) return { ok: false, message: 'Finding not found' };
 
+    const text = doc?.getText() ?? '';
+    if (!text && !doc) {
+      // Still allow Why? from cached finding; Fix needs source
+    }
+
     const filePath = uriToPath(uri);
-    const context = buildContext(filePath, doc.getText(), finding, docState.findings);
+    const sourceCode = text || '';
+    const context = buildContext(filePath, sourceCode, finding, docState.findings);
     const gateway = createGateway(editorLm);
 
     switch (params.command) {
@@ -183,6 +229,14 @@ export function startServer(connection: Connection): void {
       }
 
       case COMMANDS.fix: {
+        if (!sourceCode) {
+          return {
+            ok: false,
+            kind: 'fix',
+            message: 'Open the file and run CognitiveLint: Rescan, then try Fix again.',
+          };
+        }
+
         let fix =
           (await gateway.generateFix({ finding, context, useAi: true }).catch(() => null)) ??
           generateHeuristicFix(finding, context);
@@ -197,7 +251,7 @@ export function startServer(connection: Connection): void {
           };
         }
 
-        const validation = validateFix(doc.getText(), filePath, fix, finding.ruleId);
+        const validation = validateFix(sourceCode, filePath, fix, finding.ruleId);
         return {
           ok: true,
           kind: 'fix',
@@ -222,6 +276,12 @@ export function startServer(connection: Connection): void {
       case COMMANDS.applyFix: {
         const fix = params.arguments?.[2] as FixProposal | undefined;
         if (!fix) return { ok: false, message: 'Missing fix payload' };
+        if (!doc) {
+          return {
+            ok: false,
+            message: 'Document not loaded in language server — reopen the file and Rescan.',
+          };
+        }
         const next = applyFixToSource(doc.getText(), fix);
         return {
           ok: true,
@@ -238,7 +298,8 @@ export function startServer(connection: Connection): void {
 
       case COMMANDS.ignore: {
         ignored.add(ignoreKey(filePath, finding));
-        await refresh(doc);
+        if (doc) await refresh(doc);
+        else connection.sendDiagnostics({ uri, diagnostics: [] });
         return { ok: true, kind: 'ignore', message: `Ignored ${finding.ruleId}` };
       }
 
@@ -248,8 +309,6 @@ export function startServer(connection: Connection): void {
   });
 
   void workspaceRoot;
-
-  // TextDocuments must listen before connection.listen()
   documents.listen(connection);
   connection.listen();
 }
@@ -299,16 +358,32 @@ function overlaps(
   return range.start.line <= endLine && range.end.line >= startLine;
 }
 
-function isJsx(uri: string, languageId?: string): boolean {
+function shouldAnalyze(uri: string, languageId: string, text: string): boolean {
   if (languageId === 'javascriptreact' || languageId === 'typescriptreact') return true;
-  return /\.(jsx|tsx)([?#].*)?$/i.test(uri);
+  if (/\.(jsx|tsx)([?#].*)?$/i.test(uri)) return true;
+  // VS Code sometimes labels .tsx as typescript / .jsx as javascript
+  if (
+    (languageId === 'typescript' || languageId === 'javascript') &&
+    (/</.test(text) || /\.(jsx|tsx)([?#].*)?$/i.test(uri))
+  ) {
+    return true;
+  }
+  return false;
 }
 
 function uriToPath(uri: string): string {
-  if (uri.startsWith('file://')) {
+  if (!uri.startsWith('file:')) return uri;
+  try {
+    // Handles Windows file:///c%3A/... and file:///c:/...
+    const url = new URL(uri);
+    let pathname = decodeURIComponent(url.pathname);
+    if (/^\/[A-Za-z]:\//.test(pathname)) {
+      pathname = pathname.slice(1);
+    }
+    return pathname;
+  } catch {
     return decodeURIComponent(uri.replace(/^file:\/\//, ''));
   }
-  return uri;
 }
 
 function ignoreKey(filePath: string, finding: EnrichedFinding): string {

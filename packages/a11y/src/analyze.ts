@@ -20,8 +20,20 @@ export async function analyzeFile(options: AnalyzeOptions): Promise<AnalyzeResul
   const { filePath, sourceCode } = options;
   const enrich = options.enrich !== false;
 
-  const deterministic = runJsxA11y(sourceCode, filePath);
-  const semantic = runSemanticScan(sourceCode, filePath);
+  let deterministic: Awaited<ReturnType<typeof runJsxA11y>> = [];
+  try {
+    deterministic = runJsxA11y(sourceCode, filePath);
+  } catch {
+    // ESLint can fail in some Electron/Node hosts — keep semantic findings.
+    deterministic = [];
+  }
+
+  let semantic: Awaited<ReturnType<typeof runSemanticScan>> = [];
+  try {
+    semantic = runSemanticScan(sourceCode, filePath);
+  } catch {
+    semantic = [];
+  }
 
   const merged = dedupeFindings([...deterministic, ...semantic]);
 

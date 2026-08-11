@@ -2,7 +2,7 @@
   "name": "cognitivelint-a11y",
   "displayName": "CognitiveLint Accessibility Agent",
   "description": "Accessibility guidance for React — jsx-a11y diagnostics with Fix / Why? / Ignore quick fixes",
-  "version": "0.1.2",
+  "version": "0.1.3",
   "publisher": "cognitivelint",
   "license": "MIT",
   "private": true,
