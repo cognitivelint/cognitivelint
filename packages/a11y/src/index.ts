@@ -6,8 +6,12 @@ export { explainWithPersona, getWcagGuidance } from './personas/impact.js';
 export {
   AccessibilityAIGateway,
   createGateway,
-  aiAvailable,
   askPersona,
+  buildPersonaExplainPrompt,
+  buildFixPrompt,
+  buildPersonaChatSystemPrompt,
+  extractJson,
+  type LmClient,
 } from './ai/gateway.js';
 export { generateHeuristicFix, applyFixToSource } from './fix/generate.js';
 export { validateFix } from './fix/validate.js';

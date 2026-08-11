@@ -306,6 +306,8 @@ pnpm cognitivelint a11y
 pnpm cognitivelint a11y --fix --dry-run
 ```
 
+Personas run as editor Chat subagents (`@screen-reader`, `@keyboard`, `@cognitive`) using built-in Copilot / Cursor models via `vscode.lm` — no separate API key.
+
 ## Contributing
 
 1. Fork the repository and create a feature branch

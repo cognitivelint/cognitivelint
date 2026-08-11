@@ -32,9 +32,6 @@ importers:
 
   packages/a11y:
     dependencies:
-      '@anthropic-ai/sdk':
-        specifier: ^0.52.0
-        version: 0.52.0
       '@typescript-eslint/parser':
         specifier: ^8.34.0
         version: 8.64.0(eslint@9.39.5)(typescript@5.9.3)
@@ -164,9 +161,6 @@ importers:
 
   packages/vscode-a11y:
     dependencies:
-      '@cognitivelint/a11y':
-        specifier: workspace:*
-        version: link:../a11y
       '@cognitivelint/a11y-server':
         specifier: workspace:*
         version: link:../a11y-server
@@ -175,7 +169,7 @@ importers:
         version: 9.0.1
     devDependencies:
       '@types/vscode':
-        specifier: ^1.85.0
+        specifier: ^1.90.0
         version: 1.125.0
 
 packages:

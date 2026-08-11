@@ -100,9 +100,13 @@ export interface AnalyzeOptions {
   sourceCode: string;
   /** Enrich with persona human-impact explanations (default true) */
   enrich?: boolean;
-  /** Use live AI when API key is available (default true if key present) */
+  /**
+   * Use the host editor's built-in language model for enrichment.
+   * Prefer on-demand Quick Fix / chat subagents; batch scans stay deterministic.
+   */
   useAi?: boolean;
-  apiKey?: string;
+  /** Injected LM client from VS Code / Cursor (`vscode.lm`). Never an API key. */
+  lm?: import('./ai/gateway.js').LmClient;
 }
 
 export interface AnalyzeResult {
@@ -117,14 +121,12 @@ export interface ExplainRequest {
   context: AnalysisContext;
   persona?: PersonaId;
   useAi?: boolean;
-  apiKey?: string;
 }
 
 export interface FixRequest {
   finding: EnrichedFinding;
   context: AnalysisContext;
   useAi?: boolean;
-  apiKey?: string;
 }
 
 export const PERSONA_LABELS: Record<PersonaId, string> = {
