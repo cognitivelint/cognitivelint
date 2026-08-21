@@ -1,8 +1,16 @@
 {
   "name": "@cognitivelint/cli",
-  "version": "0.1.1",
+  "version": "0.2.0",
   "description": "CLI for CognitiveLint - SonarQube for Cognitive UX",
-  "keywords": ["cognitivelint", "ux", "react", "lint", "cognitive", "accessibility", "usability"],
+  "keywords": [
+    "cognitivelint",
+    "ux",
+    "react",
+    "lint",
+    "cognitive",
+    "accessibility",
+    "usability"
+  ],
   "author": "Deepak Koul",
   "license": "MIT",
   "repository": {
@@ -20,7 +28,9 @@
   },
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",
-  "files": ["dist"],
+  "files": [
+    "dist"
+  ],
   "scripts": {
     "build": "tsc",
     "dev": "tsc --watch",

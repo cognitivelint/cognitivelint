@@ -1,6 +1,6 @@
 {
   "name": "@cognitivelint/a11y",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "description": "Accessibility analysis engine for CognitiveLint — jsx-a11y + AI personas",
   "author": "Deepak Koul",
   "license": "MIT",
