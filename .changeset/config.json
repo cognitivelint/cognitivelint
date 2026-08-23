@@ -1,9 +1,14 @@
 {
   "$schema": "https://unpkg.com/@changesets/config@3.1.4/schema.json",
-  "changelog": ["@changesets/changelog-github", { "repo": "cognitivelint/cognitivelint" }],
+  "changelog": false,
   "commit": false,
   "fixed": [],
-  "linked": [],
+  "linked": [
+    ["@cognitivelint/a11y", "@cognitivelint/cli"],
+    ["@cognitivelint/core", "@cognitivelint/cli"],
+    ["@cognitivelint/rule-engine", "@cognitivelint/rules"],
+    ["@cognitivelint/rules", "@cognitivelint/cli"]
+  ],
   "access": "public",
   "baseBranch": "main",
   "updateInternalDependencies": "patch",

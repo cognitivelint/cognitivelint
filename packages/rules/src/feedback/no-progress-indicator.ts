@@ -2,7 +2,10 @@ import { createRule } from '@cognitivelint/rule-engine';
 import type { ReactComponent } from '@cognitivelint/parser-react';
 
 const STEP_PATTERNS = ['step', 'wizard', 'stepper', 'multistep', 'workflow'];
-const PROGRESS_PATTERNS = ['progress', 'indicator', 'breadcrumb', 'steps', 'stepper'];
+const PROGRESS_PATTERNS = [
+  'progress', 'indicator', 'breadcrumb', 'steps', 'stepper',
+  'stepnav', 'tabs',  // PatternFly wizard nav
+];
 
 function isMultiStepFlow(component: ReactComponent): boolean {
   return component.jsxElements.some((el) => {
@@ -30,14 +33,19 @@ export const noProgressIndicator = createRule({
   },
   defaultOptions: {},
   create(context) {
+    const reportedComponents = new Set<string>();
+
     return {
       'Component:exit'(component: ReactComponent) {
+        if (reportedComponents.has(component.name)) return;
+
         if (isMultiStepFlow(component) && !hasProgressIndicator(component)) {
           const stepElement = component.jsxElements.find((el) =>
             STEP_PATTERNS.some((p) => el.tagName.toLowerCase().includes(p))
           );
 
           if (stepElement) {
+            reportedComponents.add(component.name);
             context.report({
               severity: 'medium',
               confidence: 70,

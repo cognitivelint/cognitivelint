@@ -1,6 +1,6 @@
 {
   "name": "@cognitivelint/a11y-server",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "description": "Language server for CognitiveLint Accessibility Agent",
   "author": "Deepak Koul",
   "license": "MIT",
@@ -15,7 +15,9 @@
   },
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",
-  "files": ["dist"],
+  "files": [
+    "dist"
+  ],
   "scripts": {
     "build": "tsc",
     "dev": "tsc --watch",
@@ -27,5 +29,10 @@
     "vscode-languageserver": "^9.0.1",
     "vscode-languageserver-textdocument": "^1.0.12"
   },
-  "keywords": ["cognitivelint", "accessibility", "lsp", "language-server"]
+  "keywords": [
+    "cognitivelint",
+    "accessibility",
+    "lsp",
+    "language-server"
+  ]
 }
