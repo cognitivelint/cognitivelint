@@ -4,10 +4,7 @@
   "commit": false,
   "fixed": [],
   "linked": [
-    ["@cognitivelint/a11y", "@cognitivelint/cli"],
-    ["@cognitivelint/core", "@cognitivelint/cli"],
-    ["@cognitivelint/rule-engine", "@cognitivelint/rules"],
-    ["@cognitivelint/rules", "@cognitivelint/cli"]
+    ["@cognitivelint/a11y", "@cognitivelint/core", "@cognitivelint/rule-engine", "@cognitivelint/rules", "@cognitivelint/cli"]
   ],
   "access": "public",
   "baseBranch": "main",
