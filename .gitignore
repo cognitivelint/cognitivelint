@@ -8,4 +8,3 @@ dist/
 .env.local
 coverage/
 .cognitivelint/
-.history/
