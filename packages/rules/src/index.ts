@@ -25,6 +25,8 @@ import {
   longForms,
   filterOverload,
   denseTables,
+  destructiveAsPrimary,
+  tooManyTabs,
 } from './cognitive-load/index.js';
 
 import {
@@ -66,6 +68,8 @@ export function getAllRules(): Rule[] {
     longForms,
     filterOverload,
     denseTables,
+    destructiveAsPrimary,
+    tooManyTabs,
 
     // Discoverability (15%)
     missingSearch,

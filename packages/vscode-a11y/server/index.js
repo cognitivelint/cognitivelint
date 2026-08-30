@@ -5,20 +5,11 @@ var __getOwnPropDesc = Object.getOwnPropertyDescriptor;
 var __getOwnPropNames = Object.getOwnPropertyNames;
 var __getProtoOf = Object.getPrototypeOf;
 var __hasOwnProp = Object.prototype.hasOwnProperty;
-var __esm = (fn, res, err) => function __init() {
-  if (err) throw err[0];
-  try {
-    return fn && (res = (0, fn[__getOwnPropNames(fn)[0]])(fn = 0)), res;
-  } catch (e) {
-    throw err = [e], e;
-  }
+var __esm = (fn, res) => function __init() {
+  return fn && (res = (0, fn[__getOwnPropNames(fn)[0]])(fn = 0)), res;
 };
 var __commonJS = (cb, mod) => function __require() {
-  try {
-    return mod || (0, cb[__getOwnPropNames(cb)[0]])((mod = { exports: {} }).exports, mod), mod.exports;
-  } catch (e) {
-    throw mod = 0, e;
-  }
+  return mod || (0, cb[__getOwnPropNames(cb)[0]])((mod = { exports: {} }).exports, mod), mod.exports;
 };
 var __export = (target, all) => {
   for (var name in all)
@@ -17348,8 +17339,8 @@ var require_espree = __commonJS({
         allowReturnOutsideFunction
       });
     }
-    var STATE = /* @__PURE__ */ Symbol("espree's internal state");
-    var ESPRIMA_FINISH_NODE = /* @__PURE__ */ Symbol("espree's esprimaFinishNode");
+    var STATE = Symbol("espree's internal state");
+    var ESPRIMA_FINISH_NODE = Symbol("espree's esprimaFinishNode");
     function convertAcornCommentToEsprimaComment(block, text, start, end, startLoc, endLoc, code) {
       let type;
       if (block) {
@@ -26550,10 +26541,10 @@ var require_eslint_utils = __commonJS({
       /** @type {<T>(traceMap: TraceMap<unknown>, v: T) => v is (string extends T ? string : T)} */
       Function.call.bind(Object.hasOwnProperty)
     );
-    var READ = /* @__PURE__ */ Symbol("read");
-    var CALL = /* @__PURE__ */ Symbol("call");
-    var CONSTRUCT = /* @__PURE__ */ Symbol("construct");
-    var ESM = /* @__PURE__ */ Symbol("esm");
+    var READ = Symbol("read");
+    var CALL = Symbol("call");
+    var CONSTRUCT = Symbol("construct");
+    var ESM = Symbol("esm");
     var requireCall = { require: { [CALL]: true } };
     function isModifiedGlobal(variable) {
       return variable == null || variable.defs.length !== 0 || variable.references.some((r) => r.isWrite());
@@ -50336,7 +50327,7 @@ var require_ignore = __commonJS({
     var SLASH = "/";
     var TMP_KEY_IGNORE = "node-ignore";
     if (typeof Symbol !== "undefined") {
-      TMP_KEY_IGNORE = /* @__PURE__ */ Symbol.for("node-ignore");
+      TMP_KEY_IGNORE = Symbol.for("node-ignore");
     }
     var KEY_IGNORE = TMP_KEY_IGNORE;
     var define2 = (object, key, value) => Object.defineProperty(object, key, { value });
@@ -63200,7 +63191,7 @@ var require_preserve_caught_error = __commonJS({
   "../../node_modules/.pnpm/eslint@9.39.5/node_modules/eslint/lib/rules/preserve-caught-error.js"(exports2, module2) {
     "use strict";
     var astUtils = require_ast_utils2();
-    var UNKNOWN_CAUSE = /* @__PURE__ */ Symbol("unknown_cause");
+    var UNKNOWN_CAUSE = Symbol("unknown_cause");
     var BUILT_IN_ERROR_TYPES = /* @__PURE__ */ new Set([
       "Error",
       "EvalError",
@@ -69485,9 +69476,9 @@ var require_token_store = __commonJS({
     var ForwardTokenCursor = require_forward_token_cursor();
     var PaddedTokenCursor = require_padded_token_cursor();
     var utils = require_utils2();
-    var TOKENS = /* @__PURE__ */ Symbol("tokens");
-    var COMMENTS = /* @__PURE__ */ Symbol("comments");
-    var INDEX_MAP = /* @__PURE__ */ Symbol("indexMap");
+    var TOKENS = Symbol("tokens");
+    var COMMENTS = Symbol("comments");
+    var INDEX_MAP = Symbol("indexMap");
     function createIndexMap(tokens, comments) {
       const map = /* @__PURE__ */ Object.create(null);
       let tokenIndex = 0;
@@ -77686,7 +77677,7 @@ var require_source_code = __commonJS({
         }
       });
     }
-    var caches = /* @__PURE__ */ Symbol("caches");
+    var caches = Symbol("caches");
     var SourceCode = class extends TokenStore {
       /**
        * The cache of steps that were taken while traversing the source code.
@@ -78474,7 +78465,7 @@ var require_js = __commonJS({
     var { LATEST_ECMA_VERSION } = require_ecma_version();
     var debug2 = createDebug("eslint:languages:js");
     var DEFAULT_ECMA_VERSION = 5;
-    var parserSymbol = /* @__PURE__ */ Symbol.for("eslint.RuleTester.parser");
+    var parserSymbol = Symbol.for("eslint.RuleTester.parser");
     function analyzeScope(ast, languageOptions, visitorKeys) {
       const parserOptions = languageOptions.parserOptions;
       const ecmaFeatures = parserOptions.ecmaFeatures || {};
@@ -93031,11 +93022,11 @@ var require_cjs3 = __commonJS({
       );
     }
     var ConfigArraySymbol = {
-      isNormalized: /* @__PURE__ */ Symbol("isNormalized"),
-      configCache: /* @__PURE__ */ Symbol("configCache"),
-      schema: /* @__PURE__ */ Symbol("schema"),
-      finalizeConfig: /* @__PURE__ */ Symbol("finalizeConfig"),
-      preprocessConfig: /* @__PURE__ */ Symbol("preprocessConfig")
+      isNormalized: Symbol("isNormalized"),
+      configCache: Symbol("configCache"),
+      schema: Symbol("schema"),
+      finalizeConfig: Symbol("finalizeConfig"),
+      preprocessConfig: Symbol("preprocessConfig")
     };
     var dataCache = /* @__PURE__ */ new WeakMap();
     var ConfigArray = class extends Array {
@@ -94634,9 +94625,9 @@ var require_flat_config_array = __commonJS({
         { cause: error }
       );
     }
-    var originalBaseConfig = /* @__PURE__ */ Symbol("originalBaseConfig");
-    var originalLength = /* @__PURE__ */ Symbol("originalLength");
-    var baseLength = /* @__PURE__ */ Symbol("baseLength");
+    var originalBaseConfig = Symbol("originalBaseConfig");
+    var originalLength = Symbol("originalLength");
+    var baseLength = Symbol("baseLength");
     var FlatConfigArray = class extends ConfigArray {
       /**
        * Creates a new instance.
@@ -97031,7 +97022,7 @@ var require_linter = __commonJS({
     var DEFAULT_PARSER_NAME = "espree";
     var DEFAULT_ECMA_VERSION = 5;
     var commentParser = new ConfigCommentParser();
-    var parserSymbol = /* @__PURE__ */ Symbol.for("eslint.RuleTester.parser");
+    var parserSymbol = Symbol.for("eslint.RuleTester.parser");
     var { LATEST_ECMA_VERSION } = require_ecma_version();
     var { VFile } = require_vfile();
     var { ParserService } = require_parser_service();
@@ -100046,7 +100037,7 @@ var require_find_up = __commonJS({
     var path2 = require("path");
     var locatePath = require_locate_path();
     var pathExists = require_path_exists();
-    var stop = /* @__PURE__ */ Symbol("findUp.stop");
+    var stop = Symbol("findUp.stop");
     module2.exports = async (name, options = {}) => {
       let directory = path2.resolve(options.cwd || "");
       const { root } = path2.parse(directory);
@@ -103244,7 +103235,7 @@ var require_eslint = __commonJS({
         }
       }
     }
-    var disableCloneabilityCheck = /* @__PURE__ */ Symbol(
+    var disableCloneabilityCheck = Symbol(
       "Do not check for uncloneable options."
     );
     var LOW_NET_LINTING_RATIO = 0.7;
@@ -104044,8 +104035,8 @@ var require_import_fresh = __commonJS({
 var require_strip_json_comments = __commonJS({
   "../../node_modules/.pnpm/strip-json-comments@3.1.1/node_modules/strip-json-comments/index.js"(exports2, module2) {
     "use strict";
-    var singleComment = /* @__PURE__ */ Symbol("singleComment");
-    var multiComment = /* @__PURE__ */ Symbol("multiComment");
+    var singleComment = Symbol("singleComment");
+    var multiComment = Symbol("multiComment");
     var stripWithoutWhitespace = () => "";
     var stripWithWhitespace = (string, start, end) => string.slice(start, end).replace(/\S/g, " ");
     var isEscaped = (jsonString, quotePosition) => {
@@ -106742,7 +106733,7 @@ Referenced from: ${ctx.filePath || ctx.name}`;
       }
     };
     var debug2 = debugOrig__default["default"]("eslintrc:flat-compat");
-    var cafactory = /* @__PURE__ */ Symbol("cafactory");
+    var cafactory = Symbol("cafactory");
     function translateESLintRC(eslintrcConfig, {
       resolveConfigRelativeTo,
       resolvePluginsRelativeTo,
@@ -108967,7 +108958,7 @@ var require_rule_tester = __commonJS({
       defaultRuleTesterConfig
     } = require_default_config();
     var ajv = require_ajv2()({ strictDefaults: true });
-    var parserSymbol = /* @__PURE__ */ Symbol.for("eslint.RuleTester.parser");
+    var parserSymbol = Symbol.for("eslint.RuleTester.parser");
     var { ConfigArraySymbol } = require_cjs3();
     var { isSerializable } = require_serialization();
     var jslang = require_js();
@@ -109144,9 +109135,9 @@ var require_rule_tester = __commonJS({
 
 	https://eslint.org/docs/latest/extend/custom-rules#options-schemas
 `;
-    var DESCRIBE = /* @__PURE__ */ Symbol("describe");
-    var IT = /* @__PURE__ */ Symbol("it");
-    var IT_ONLY = /* @__PURE__ */ Symbol("itOnly");
+    var DESCRIBE = Symbol("describe");
+    var IT = Symbol("it");
+    var IT_ONLY = Symbol("itOnly");
     function itDefaultHandler(text, method) {
       try {
         return method.call(this);
@@ -110622,7 +110613,7 @@ var require_define_properties = __commonJS({
   "../../node_modules/.pnpm/define-properties@1.2.1/node_modules/define-properties/index.js"(exports2, module2) {
     "use strict";
     var keys = require_object_keys();
-    var hasSymbols = typeof Symbol === "function" && typeof /* @__PURE__ */ Symbol("foo") === "symbol";
+    var hasSymbols = typeof Symbol === "function" && typeof Symbol("foo") === "symbol";
     var toStr = Object.prototype.toString;
     var concat = Array.prototype.concat;
     var defineDataProperty = require_define_data_property();
@@ -110793,7 +110784,7 @@ var require_shams = __commonJS({
         return true;
       }
       var obj = {};
-      var sym = /* @__PURE__ */ Symbol("test");
+      var sym = Symbol("test");
       var symObj = Object(sym);
       if (typeof sym === "string") {
         return false;
@@ -110852,7 +110843,7 @@ var require_has_symbols = __commonJS({
       if (typeof origSymbol("foo") !== "symbol") {
         return false;
       }
-      if (typeof /* @__PURE__ */ Symbol("bar") !== "symbol") {
+      if (typeof Symbol("bar") !== "symbol") {
         return false;
       }
       return hasSymbolSham();
@@ -130629,7 +130620,7 @@ var require_axe = __commonJS({
           var globalThis2 = require_global_this();
           var $String = globalThis2.String;
           module3.exports = !!Object.getOwnPropertySymbols && !fails(function() {
-            var symbol = /* @__PURE__ */ Symbol("symbol detection");
+            var symbol = Symbol("symbol detection");
             return !$String(symbol) || !(Object(symbol) instanceof Symbol) || !Symbol.sham && V8_VERSION && V8_VERSION < 41;
           });
         });
@@ -493605,7 +493596,7 @@ var require_range2 = __commonJS({
 var require_comparator = __commonJS({
   "../../node_modules/.pnpm/semver@7.8.5/node_modules/semver/classes/comparator.js"(exports2, module2) {
     "use strict";
-    var ANY = /* @__PURE__ */ Symbol("SemVer ANY");
+    var ANY = Symbol("SemVer ANY");
     var Comparator = class _Comparator {
       static get ANY() {
         return ANY;
@@ -505336,7 +505327,7 @@ var require_ast2 = __commonJS({
       get depth() {
         return (this.#parent?.depth ?? -1) + 1;
       }
-      [/* @__PURE__ */ Symbol.for("nodejs.util.inspect.custom")]() {
+      [Symbol.for("nodejs.util.inspect.custom")]() {
         return {
           "@@type": "AST",
           id: this.id,
@@ -505995,7 +505986,7 @@ var require_commonjs3 = __commonJS({
     };
     exports2.sep = defaultPlatform === "win32" ? path2.win32.sep : path2.posix.sep;
     exports2.minimatch.sep = exports2.sep;
-    exports2.GLOBSTAR = /* @__PURE__ */ Symbol("globstar **");
+    exports2.GLOBSTAR = Symbol("globstar **");
     exports2.minimatch.GLOBSTAR = exports2.GLOBSTAR;
     var qmark = "[^/]";
     var star = qmark + "*?";
