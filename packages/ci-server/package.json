@@ -1,6 +1,6 @@
 {
   "name": "@cognitivelint/ci-server",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "description": "Self-hosted CognitiveLint CI findings ledger",
   "author": "Deepak Koul",
   "license": "MIT",
@@ -25,7 +25,9 @@
       "import": "./dist/protocol/index.js"
     }
   },
-  "files": ["dist"],
+  "files": [
+    "dist"
+  ],
   "scripts": {
     "build": "tsc",
     "dev": "tsc --watch",
@@ -48,5 +50,9 @@
     "umzug": "^3.8.2",
     "zod": "^3.25.67"
   },
-  "keywords": ["cognitivelint", "ci", "ux"]
+  "keywords": [
+    "cognitivelint",
+    "ci",
+    "ux"
+  ]
 }
