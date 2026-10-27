@@ -1,13 +1,14 @@
 #!/usr/bin/env node
 
 import { Command } from 'commander';
+import { readCliVersion } from './ci/versions.js';
 
 const program = new Command();
 
 program
   .name('cognitivelint')
   .description('Cognitive UX linting for React applications')
-  .version('0.1.0');
+  .version(readCliVersion());
 
 program
   .command('scan')
@@ -17,6 +18,10 @@ program
   .option('-o, --output <path>', 'Output file path')
   .option('--min-score <score>', 'Minimum passing score')
   .option('--max-findings <count>', 'Maximum allowed findings')
+  .option('--upload', 'Upload the scan to CognitiveLint CI')
+  .option('--server <url>', 'CognitiveLint CI server URL')
+  .option('--token <token>', 'Project token')
+  .option('--project-id <id>', 'CI project id')
   .action(async (options) => {
     const { scan } = await import('./commands/scan.js');
     await scan(options);
@@ -58,6 +63,40 @@ program
   .action(async (options) => {
     const { a11y } = await import('./commands/a11y.js');
     await a11y(options);
+  });
+
+program
+  .command('upload')
+  .description('Upload a CognitiveLint run to a CI server')
+  .requiredOption('--server <url>', 'CI server URL')
+  .requiredOption('--token <token>', 'Project token')
+  .requiredOption('--project-id <id>', 'Project id')
+  .option('--file <path>', 'RunV1 or scan JSON report path')
+  .action(async (options) => {
+    const { uploadCommand } = await import('./ci/upload.js');
+    await uploadCommand(options);
+  });
+
+program
+  .command('assert')
+  .description('Compare two uploaded SHAs and fail on new high/critical findings')
+  .requiredOption('--server <url>', 'CI server URL')
+  .option('--token <token>', 'Project token (optional; compare is public)')
+  .requiredOption('--project-id <id>', 'Project id')
+  .requiredOption('--base <sha>', 'Base git sha')
+  .requiredOption('--head <sha>', 'Head git sha')
+  .option('--fail-on-new-high', 'Exit 1 on new high/critical findings (default)', true)
+  .option('--no-fail-on-new-high', 'Do not fail the process')
+  .action(async (options) => {
+    const { assertCommand } = await import('./ci/assert.js');
+    await assertCommand({
+      server: options.server,
+      token: options.token,
+      projectId: options.projectId,
+      base: options.base,
+      head: options.head,
+      failOnNewHigh: options.failOnNewHigh,
+    });
   });
 
 program.parse();

@@ -1,0 +1,101 @@
+{
+  "schema": "cognitivelint.run.v1",
+  "git": {
+    "sha": "abc1234dewadbeef",
+    "branch": "main"
+  },
+  "tool": {
+    "name": "CognitiveLint",
+    "version": "0.2.1",
+    "rulesVersion": "0.2.1"
+  },
+  "configHash": "69e636996d5eddf8964a013a3694ca0c1cd1973cc5494b38b6777a107a15bf97",
+  "runKind": "cognitive",
+  "report": {
+    "tool": {
+      "name": "CognitiveLint",
+      "version": "0.2.1"
+    },
+    "timestamp": "2026-01-01T00:00:00.000Z",
+    "project": {
+      "name": "demo",
+      "path": "/demo"
+    },
+    "score": {
+      "overall": 80,
+      "grade": "B",
+      "categories": [
+        {
+          "category": "cognitive-load",
+          "score": 90,
+          "weight": 30,
+          "findingCount": 0
+        },
+        {
+          "category": "trust-confidence",
+          "score": 90,
+          "weight": 20,
+          "findingCount": 0
+        },
+        {
+          "category": "feedback",
+          "score": 80,
+          "weight": 15,
+          "findingCount": 0
+        },
+        {
+          "category": "discoverability",
+          "score": 80,
+          "weight": 15,
+          "findingCount": 0
+        },
+        {
+          "category": "consistency",
+          "score": 90,
+          "weight": 10,
+          "findingCount": 0
+        },
+        {
+          "category": "error-prevention",
+          "score": 70,
+          "weight": 10,
+          "findingCount": 1
+        }
+      ]
+    },
+    "findings": [
+      {
+        "ruleId": "error-prevention/destructive-no-confirm",
+        "severity": "high",
+        "confidence": 70,
+        "category": "error-prevention",
+        "message": "Destructive action lacks confirmation.",
+        "location": {
+          "file": "src/UserTable.tsx",
+          "startLine": 10,
+          "startColumn": 2,
+          "endLine": 12,
+          "endColumn": 4
+        }
+      }
+    ],
+    "summary": {
+      "totalFindings": 1,
+      "bySeverity": {
+        "high": 1
+      },
+      "byCategory": {
+        "error-prevention": 1
+      },
+      "filesAnalyzed": 1,
+      "componentsAnalyzed": 1,
+      "scanDurationMs": 12
+    },
+    "config": {
+      "rules": {},
+      "weights": {
+        "cognitive-load": 30
+      }
+    }
+  }
+}

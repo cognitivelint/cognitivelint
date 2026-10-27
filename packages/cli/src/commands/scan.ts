@@ -11,6 +11,9 @@ import { getAllRules } from '@cognitivelint/rules';
 import { calculateScore } from '@cognitivelint/core';
 import { getFormatter } from '@cognitivelint/formatters';
 import type { Finding, Report, Severity, CognitiveCategory } from '@cognitivelint/core';
+import { readCliVersion } from '../ci/versions.js';
+import { collectGitMeta } from '../ci/git.js';
+import { reportToRunV1 } from '../ci/build-run.js';
 
 export interface ScanOptions {
   config?: string;
@@ -18,6 +21,10 @@ export interface ScanOptions {
   output?: string;
   minScore?: string;
   maxFindings?: string;
+  upload?: boolean;
+  server?: string;
+  token?: string;
+  projectId?: string;
 }
 
 function countBy<T>(arr: T[], keyFn: (item: T) => string): Record<string, number> {
@@ -29,7 +36,7 @@ function countBy<T>(arr: T[], keyFn: (item: T) => string): Record<string, number
   return result;
 }
 
-export async function scan(options: ScanOptions): Promise<void> {
+export async function executeScan(options: ScanOptions): Promise<Report | null> {
   const spinner = ora('Loading configuration...').start();
 
   try {
@@ -47,7 +54,7 @@ export async function scan(options: ScanOptions): Promise<void> {
 
     if (files.length === 0) {
       spinner.warn('No React files found matching patterns');
-      return;
+      return null;
     }
 
     spinner.text = `Analyzing ${files.length} files...`;
@@ -73,7 +80,7 @@ export async function scan(options: ScanOptions): Promise<void> {
           const findings = engine.analyze(relativePath, sourceCode, [component]);
           allFindings.push(...findings);
         }
-      } catch (err) {
+      } catch {
         // Skip files that fail to parse
       }
     }
@@ -84,10 +91,13 @@ export async function scan(options: ScanOptions): Promise<void> {
     const score = calculateScore(allFindings, config.weights);
 
     const severityCounts = countBy(allFindings, (f) => f.severity) as Record<Severity, number>;
-    const categoryCounts = countBy(allFindings, (f) => f.category) as Record<CognitiveCategory, number>;
+    const categoryCounts = countBy(allFindings, (f) => f.category) as Record<
+      CognitiveCategory,
+      number
+    >;
 
     const report: Report = {
-      tool: { name: 'CognitiveLint', version: '0.1.0' },
+      tool: { name: 'CognitiveLint', version: readCliVersion() },
       timestamp: new Date().toISOString(),
       project: {
         name: path.basename(process.cwd()),
@@ -106,6 +116,21 @@ export async function scan(options: ScanOptions): Promise<void> {
       config: config as Record<string, unknown>,
     };
 
+    return report;
+  } catch (err) {
+    spinner.fail('Scan failed');
+    throw err;
+  }
+}
+
+export async function scan(options: ScanOptions): Promise<void> {
+  try {
+    const report = await executeScan(options);
+    if (!report) {
+      return;
+    }
+
+    const config = report.config as { format?: string; minScore?: number; maxFindings?: number };
     const formatName = options.format ?? config.format ?? 'terminal';
     const formatter = getFormatter(formatName);
     const output = formatter.format(report);
@@ -117,20 +142,37 @@ export async function scan(options: ScanOptions): Promise<void> {
       console.log(output);
     }
 
-    const minScore = options.minScore ? parseInt(options.minScore, 10) : config.minScore;
-    const maxFindings = options.maxFindings ? parseInt(options.maxFindings, 10) : config.maxFindings;
+    if (options.upload) {
+      if (!options.server || !options.token || !options.projectId) {
+        throw new Error('scan --upload requires --server, --token, and --project-id');
+      }
+      const { uploadRun } = await import('../ci/upload.js');
+      const uploaded = await uploadRun({
+        server: options.server,
+        token: options.token,
+        projectId: options.projectId,
+        run: reportToRunV1(report, collectGitMeta()),
+      });
+      console.log(chalk.green(`Uploaded run ${uploaded.sha}`));
+    }
 
-    if (minScore !== undefined && score.overall < minScore) {
-      console.error(chalk.red(`\nScore ${score.overall} is below minimum ${minScore}`));
+    const minScore = options.minScore ? parseInt(options.minScore, 10) : config.minScore;
+    const maxFindings = options.maxFindings
+      ? parseInt(options.maxFindings, 10)
+      : config.maxFindings;
+
+    if (minScore !== undefined && report.score.overall < minScore) {
+      console.error(chalk.red(`\nScore ${report.score.overall} is below minimum ${minScore}`));
       process.exit(1);
     }
 
-    if (maxFindings !== undefined && allFindings.length > maxFindings) {
-      console.error(chalk.red(`\nFindings ${allFindings.length} exceeds maximum ${maxFindings}`));
+    if (maxFindings !== undefined && report.findings.length > maxFindings) {
+      console.error(
+        chalk.red(`\nFindings ${report.findings.length} exceeds maximum ${maxFindings}`),
+      );
       process.exit(1);
     }
   } catch (err) {
-    spinner.fail('Scan failed');
     console.error(chalk.red(err instanceof Error ? err.message : String(err)));
     process.exit(1);
   }
