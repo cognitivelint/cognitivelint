@@ -26,8 +26,8 @@ jobs:
           node-version-file: '.nvmrc'
           registry-url: 'https://registry.npmjs.org'
 
-      - run: npm install -g npm@latest
-
+      # Use the npm bundled with Node. `npm@latest` (v11+) removed `--git-checks`, which
+      # `changeset publish` still passes and breaks OIDC publishes.
       - run: pnpm install --frozen-lockfile
 
       - run: pnpm run build
