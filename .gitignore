@@ -8,3 +8,6 @@ dist/
 .env.local
 coverage/
 .cognitivelint/
+data/
+*.sqlite
+

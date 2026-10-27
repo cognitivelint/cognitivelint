@@ -11,6 +11,7 @@
     { "path": "../parser-react" },
     { "path": "../rule-engine" },
     { "path": "../rules" },
-    { "path": "../formatters" }
+    { "path": "../formatters" },
+    { "path": "../ci-server" }
   ]
 }

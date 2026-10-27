@@ -295,6 +295,7 @@ node packages/cli/dist/index.js scan
 | `@cognitivelint/a11y` | Accessibility engine (jsx-a11y + personas + fix validation) |
 | `@cognitivelint/a11y-server` | Accessibility language server |
 | `cognitivelint-a11y` | VS Code / Cursor Accessibility Agent extension |
+| `@cognitivelint/ci-server` | Self-hosted CI ledger + trends UI; exports `./protocol` for CLI ([docs](packages/ci-server/docs/README.md)) |
 
 ## Accessibility Agent
 

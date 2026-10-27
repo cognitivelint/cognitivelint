@@ -1,0 +1,52 @@
+{
+  "name": "@cognitivelint/ci-server",
+  "version": "0.1.0",
+  "description": "Self-hosted CognitiveLint CI findings ledger",
+  "author": "Deepak Koul",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/cognitivelint/cognitivelint.git",
+    "directory": "packages/ci-server"
+  },
+  "type": "module",
+  "bin": {
+    "cognitivelint-ci-server": "./dist/index.js"
+  },
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
+    },
+    "./protocol": {
+      "types": "./dist/protocol/index.d.ts",
+      "import": "./dist/protocol/index.js"
+    }
+  },
+  "files": ["dist"],
+  "scripts": {
+    "build": "tsc",
+    "dev": "tsc --watch",
+    "start": "node dist/index.js",
+    "seed": "node scripts/seed-demo-data.mjs",
+    "test": "vitest run",
+    "typecheck": "tsc --noEmit",
+    "clean": "rm -rf dist .turbo *.tsbuildinfo"
+  },
+  "dependencies": {
+    "@cognitivelint/core": "workspace:*",
+    "hono": "^4.8.4",
+    "@hono/node-server": "^1.17.1",
+    "@patternfly/patternfly": "^5.4.2",
+    "sqlite3": "^5.1.7",
+    "mysql2": "^3.14.1",
+    "pg": "^8.16.0",
+    "pg-hstore": "^2.3.4",
+    "sequelize": "^6.37.7",
+    "umzug": "^3.8.2",
+    "zod": "^3.25.67"
+  },
+  "keywords": ["cognitivelint", "ci", "ux"]
+}
