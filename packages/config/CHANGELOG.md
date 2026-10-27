@@ -1,0 +1,2 @@
+# @cognitivelint/config
+

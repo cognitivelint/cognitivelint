@@ -32,6 +32,9 @@ jobs:
 
       - run: pnpm run build
 
+      # Some package builds rewrite tracked bundles (e.g. vscode-a11y server); changesets checks out a branch and needs a clean tree.
+      - run: git checkout -- .
+
       - uses: changesets/action@v1
         with:
           publish: pnpm changeset publish
