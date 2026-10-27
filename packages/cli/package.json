@@ -1,6 +1,6 @@
 {
   "name": "@cognitivelint/cli",
-  "version": "0.2.1",
+  "version": "0.3.0",
   "description": "CLI for CognitiveLint - SonarQube for Cognitive UX",
   "keywords": [
     "cognitivelint",
